@@ -136,7 +136,7 @@ namespace Scene3D.Helper
             //    }
             //}
 
-            return new Model(triangles.ToArray(), Vector3.Zero, new Vector3(0.05f, 0.05f, 0), Vector3.Zero, new Scene3D.Movers.StationaryMover(Vector3.Zero), 1);
+            return new Model(triangles.ToArray(), Vector3.Zero, Vector3.Zero, Vector3.Zero, new Scene3D.Movers.StationaryMover(Vector3.Zero), 1);
         }
     }
 }

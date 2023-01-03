@@ -27,6 +27,8 @@ namespace Scene3D.Objects
 
         public Color ObjectColor { get; set; }
 
+        public Vector3 RotatedCenter { get; set; }
+
         public Model(Triangle[] faces, Vector3 angle, Vector3 angleStep, Vector3 movement, IMover mover, float scale)
         {
             this.faces = faces;
@@ -36,6 +38,7 @@ namespace Scene3D.Objects
             Scale = scale;
             Mover = mover;
             ObjectColor = Color.DarkOliveGreen;
+            RotatedCenter = Vector3.Zero;
         }
 
         public Model(Model model)
@@ -78,6 +81,9 @@ namespace Scene3D.Objects
             {
                 triangle.Rotate(PVM, model);
             }
+            var temp = Vector4.Transform(Vector3.Zero, PVM);
+            temp /= temp.W;
+            RotatedCenter = new Vector3(temp.X, temp.Y, temp.Z);
         }
 
         public void Draw(FastBitmap fastBitmap, Vector3 cameraPos)

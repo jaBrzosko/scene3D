@@ -67,9 +67,11 @@
             this.Controls.Add(this.buttonStep);
             this.Controls.Add(this.canvas);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "Visualizer";
             this.Text = "Scene 3D";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Visualizer_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.canvas)).EndInit();
             this.ResumeLayout(false);
 

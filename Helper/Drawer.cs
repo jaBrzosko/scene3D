@@ -55,8 +55,8 @@ namespace Scene3D.Helper
                     break;
                 }
             }
-            if (!acceptable)
-                return;
+            //if (!acceptable)
+            //    return;
 
             int[] ind = new int[3];
             int[] yval = new int[3];
