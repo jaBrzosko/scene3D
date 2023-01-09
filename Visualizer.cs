@@ -13,51 +13,28 @@ namespace Scene3D
         private ModelCollection modelCollection;
         private Model moving;
         private CameraType cameraType;
+        private CircleMover circleMover;
+        private bool interpolateColor;
         public Visualizer()
         {
             InitializeComponent();
 
             fastBitmap = new FastBitmap(canvas.Width, canvas.Height);
             canvas.Image = fastBitmap.Bitmap;
-            modelCollection = new ModelCollection(canvas.Width / canvas.Height);
 
-            string objName = "FullTorusNormalized.obj";
-            //string objName = "FullSphere.obj";
-            string pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
-            var model = FileReader.ReadObj(pathModel);
-            var newModel = new Model(model);
-            //newModel.AngleStep = new Vector3(0.01f, 0, 0);
-            newModel.Scale = 0.5f;
-            newModel.ObjectColor = Color.Blue;
-            
-            newModel.Mover = new CircleMover(4.0f, MathF.PI / 40, 0);
+            //modelCollection = SceneLoaders.SceneLoader.LoadChess(canvas.Width / canvas.Height);
+            modelCollection = SceneLoaders.SceneLoader.LoadBasic(canvas.Width / canvas.Height);
+            moving = modelCollection.Last;
 
-            moving = newModel;
+            var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(4, 4, 10), fastBitmap.Width, fastBitmap.Height);
+            LightSingleton.AddLight(pointLight);
 
-            var anotherModel = new Model(model);
-            model.Mover = new StationaryMover(new Vector3(0, 1.25f, 0));
-            anotherModel.Mover = new StationaryMover(new Vector3(0, -1.25f, 0));
+            //var spotLight = new SpotLight(new Vector3(1, 1, 1), new Vector3(1, 0, 0), new Vector3(-1, 0, 0), fastBitmap.Width, fastBitmap.Height, MathF.PI / 4);
+            //LightSingleton.AddLight(spotLight);
 
-            objName = "FullSphere.obj";
-            pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
-            var sphere1 = FileReader.ReadObj(pathModel);
-            sphere1.ObjectColor = Color.Magenta;
-            sphere1.Scale = 0.5f;
-            var sphere2 = new Model(sphere1);
-
-            sphere1.Mover = new LineMover(4, new Vector3(0, 0, 0.1f), new Vector3(0, -2.5f, 0));
-            sphere2.Mover = new LineMover(4, new Vector3(0, 0, -0.1f), new Vector3(0, 2.5f, 0));
-
-
-            modelCollection.AddModel(model);
-            modelCollection.AddModel(newModel);
-            modelCollection.AddModel(anotherModel);
-            modelCollection.AddModel(sphere1);
-            modelCollection.AddModel(sphere2);
-
-
-            LightSingleton.AddLight(new Light(new Vector3(1, 1, 1), new Vector3(2, 4, 0), fastBitmap.Width, fastBitmap.Height));
             cameraType = CameraType.Stationary;
+            circleMover = new CircleMover(modelCollection.CameraPos.Length(), 0.1f, modelCollection.CameraPos.Z);
+            interpolateColor = true;
 
             Redraw();
         }
@@ -90,9 +67,16 @@ namespace Scene3D
                         modelCollection.CameraTarget = moving.Movement * moving.Scale;
                         break;
                     }
+                case CameraType.Rotating:
+                    {
+                        modelCollection.CameraPos = circleMover.GetNewPosition();
+                        modelCollection.CameraTarget = modelCollection.cameraTargetOrigin;
+                        break;
+                    }
             }
+            //light.Position = moving.Movement;
             modelCollection.Rotate();
-            modelCollection.Draw(fastBitmap);
+            modelCollection.Draw(fastBitmap, interpolateColor);
             
 
             canvas.Refresh();
@@ -138,6 +122,24 @@ namespace Scene3D
                 case Keys.F3:
                     {
                         cameraType = CameraType.Moving;
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.F4:
+                    {
+                        cameraType = CameraType.Rotating;
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.D1:
+                    {
+                        interpolateColor = true;
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.D2:
+                    {
+                        interpolateColor = false;
                         Redraw(false);
                         break;
                     }

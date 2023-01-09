@@ -17,6 +17,7 @@ namespace Scene3D.Helper
         private int halfHeight;
         private int halfWidth;
         private float[,] zBuffor;
+        private Mutex[,] zMutex;
         private float kd = 1;
         private float ks = 1;
         private float m = 50;
@@ -27,6 +28,14 @@ namespace Scene3D.Helper
             halfHeight = height / 2;
             halfWidth = width / 2;
             zBuffor = new float[height, width];
+            zMutex = new Mutex[height, width];
+            for(int i = 0; i < height; i++)
+            {
+                for(int j = 0; j < width; j++)
+                {
+                    zMutex[i, j] = new Mutex();
+                }
+            }
         }
 
         public void Reset()
@@ -40,7 +49,7 @@ namespace Scene3D.Helper
             }
         }
 
-        public void Draw(FastBitmap fastBitmap, Triangle triangle, Vector3 vectorColor, Vector3 cameraPos)
+        public void Draw(FastBitmap fastBitmap, Triangle triangle, Vector3 vectorColor, Vector3 cameraPos, bool interpolateColor)
         {
             // Back face culling
             bool acceptable = false;
@@ -99,12 +108,15 @@ namespace Scene3D.Helper
 
             var lights = LightSingleton.GetInstance();
             Vector3[] cornerColors = new Vector3[3];
-            for(int i = 0; i < 3; i++)
+            if(interpolateColor)
             {
-                cornerColors[i] = GetVectorColor(new Vector3(triangle.rotatedPositions[ind[i]].X * halfWidth + halfWidth,
-                                                             triangle.rotatedPositions[ind[i]].Y * halfHeight + halfHeight,
-                                                             triangle.rotatedPositions[ind[i]].Z),
-                                        triangle.rotatedNormals[i], vectorColor, cameraPos, lights);
+                for(int i = 0; i < 3; i++)
+                {
+                    cornerColors[i] = GetVectorColor(new Vector3(triangle.rotatedPositions[ind[i]].X * halfWidth + halfWidth,
+                                                                 triangle.rotatedPositions[ind[i]].Y * halfHeight + halfHeight,
+                                                                 triangle.rotatedPositions[ind[i]].Z),
+                                            triangle.rotatedNormals[i], vectorColor, cameraPos, lights);
+                }
             }
 
             for(y+=0; y < yMax; y++)
@@ -122,25 +134,45 @@ namespace Scene3D.Helper
                 int xp0 = aetp1.X;
                 if (xp0 > xp1)
                     (xp0, xp1) = (xp1, xp0);
-                FillAETP(xp0, xp1, y, fastBitmap, vectorColor, triangle, lights, cornerColors);
+                FillAETP(xp0, xp1, y, fastBitmap, vectorColor, triangle, lights, cornerColors, interpolateColor, cameraPos);
 
                 aetp0.Next();
                 aetp1.Next();
             }
         }
 
-        private void FillAETP(int x0, int x1, int y, FastBitmap fastBitmap, Vector3 vectorColor, Triangle triangle, List<Light> lights, Vector3[] cornerColors)
+        private void FillAETP(int x0, int x1, int y, FastBitmap fastBitmap, Vector3 vectorColor, Triangle triangle, List<ILight> lights, Vector3[] cornerColors, bool interpolateColor, Vector3 cameraPos)
         {
             for(int x = x0; x <= x1; x++)
             {
                 if(x < 0 || x >= fastBitmap.Width || y < 0 || y >= fastBitmap.Height)
                     continue;
                 float z = triangle.InterpolateZ(x, y, width, height);
+                zMutex[x, y].WaitOne();
                 if (z >= zBuffor[x, y])
+                {
+                    zMutex[x, y].ReleaseMutex();
                     continue;
+                }
                 zBuffor[x, y] = z;
-                fastBitmap.SetPixel(x, y, GetColorCornerInterpolated(triangle.GetBarycentricCoordinates(x, y, width, height), cornerColors));
+                if(interpolateColor)
+                    fastBitmap.SetPixel(x, y, GetColorCornerInterpolated(triangle.GetBarycentricCoordinates(x, y, width, height), cornerColors));
+                else
+                {
+                    var bar = triangle.GetBarycentricCoordinates(x, y, width, height);
+                    var normal = triangle.rotatedNormals[0] * bar.X + triangle.rotatedNormals[1] * bar.Y + triangle.rotatedNormals[2] * bar.Z;
+                    fastBitmap.SetPixel(x, y, ColorFromVector(GetVectorColor(new Vector3(x, y, triangle.InterpolateZ(x, y, width, height)),
+                                                            normal, vectorColor, cameraPos, lights)));
+                }
+                zMutex[x, y].ReleaseMutex();
             }
+        }
+
+        private Color ColorFromVector(Vector3 color)
+        {
+            return Color.FromArgb(Math.Min(Math.Max((int)(color.X * 255), 0), 255),
+                                  Math.Min(Math.Max((int)(color.Y * 255), 0), 255),
+                                  Math.Min(Math.Max((int)(color.Z * 255), 0), 255));
         }
 
         private Color GetColorCornerInterpolated(Vector3 barycentric, Vector3[] cornerColors)
@@ -151,26 +183,25 @@ namespace Scene3D.Helper
             color += barycentric.Y * cornerColors[1];
             color += barycentric.Z * cornerColors[2];
 
-            return Color.FromArgb(Math.Min(Math.Max((int)(color.X * 255), 0), 255), 
-                                  Math.Min(Math.Max((int)(color.Y * 255), 0), 255), 
-                                  Math.Min(Math.Max((int)(color.Z * 255), 0), 255));
+            return ColorFromVector(color);
         }
 
-        private Vector3 GetVectorColor(Vector3 position, Vector3 normal, Vector3 objectColor, Vector3 cameraPos, List<Light> lights)
+        private Vector3 GetVectorColor(Vector3 position, Vector3 normal, Vector3 objectColor, Vector3 cameraPos, List<ILight> lights)
         {
             Vector3 outColor = Vector3.Zero;
             normal = Vector3.Normalize(normal);
             foreach(var light in lights)
             {
-                var thisColor = objectColor * light.LightColor;
                 Vector3 V = cameraPos - position;
                 V = Vector3.Normalize(V);
-                Vector3 L = light.WorldPosition - position;
+                Vector3 L = light.GetWorldPosition() - position;
                 L = Vector3.Normalize(L);
                 float dotLN = Vector3.Dot(L, normal);
                 Vector3 R = 2 * dotLN * normal - L;
                 R = Vector3.Normalize(R);
                 float dotVR = Vector3.Dot(R, V);
+
+                var thisColor = objectColor * light.GetLightColor(L, m);
 
                 outColor += thisColor * (dotLN * kd +  MathF.Pow(dotVR, m) * ks);
             }

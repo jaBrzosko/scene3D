@@ -10,6 +10,7 @@ namespace Scene3D.Enums
     {
         Stationary,
         Following,
-        Moving
+        Moving,
+        Rotating
     }
 }

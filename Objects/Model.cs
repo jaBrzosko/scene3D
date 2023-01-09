@@ -74,8 +74,7 @@ namespace Scene3D.Objects
             var rotX = Matrix4x4.CreateRotationX(Angle.X);
             var rotY = Matrix4x4.CreateRotationY(Angle.Y);
             var rotZ = Matrix4x4.CreateRotationZ(Angle.Z);
-            var model = translation * scale * rotX * rotY * rotZ;
-            //var PVM = perspectiveMatrix * lookAtMatrix * model;
+            var model = scale * rotX * rotY * rotZ * translation;
             var PVM = model * lookAtMatrix * perspectiveMatrix;
             foreach(var triangle in faces)
             {
@@ -86,13 +85,13 @@ namespace Scene3D.Objects
             RotatedCenter = new Vector3(temp.X, temp.Y, temp.Z);
         }
 
-        public void Draw(FastBitmap fastBitmap, Vector3 cameraPos)
+        public void Draw(FastBitmap fastBitmap, Vector3 cameraPos, bool interpolateColor)
         {
             var drawer = DrawerSingleton.GetInstance(fastBitmap.Width, fastBitmap.Height);
             Vector3 vectorColor = new Vector3((float)ObjectColor.R / 255, (float)ObjectColor.G / 255, (float)ObjectColor.B / 255);
             Parallel.ForEach(faces, face =>
            {
-               drawer.Draw(fastBitmap, face, vectorColor, cameraPos);
+               drawer.Draw(fastBitmap, face, vectorColor, cameraPos, interpolateColor);
            });
             //foreach(var face in faces)
             //{
