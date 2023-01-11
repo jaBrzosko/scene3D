@@ -9,14 +9,12 @@ namespace Scene3D.Movers
 {
     internal class StationaryMover : IMover
     {
-        private Vector3 position;
         public StationaryMover(Vector3 position)
         {
-            this.position = position;
         }
-        public Vector3 GetNewPosition()
+        public Vector3 GetNewPosition(Vector3 offset)
         {
-            return position;
+            return offset;
         }
     }
 }

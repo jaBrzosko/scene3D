@@ -19,10 +19,10 @@ namespace Scene3D.Movers
             thetaStep = theta;
             this.z = z;
         }
-        public Vector3 GetNewPosition()
+        public Vector3 GetNewPosition(Vector3 offset)
         {
             theta += thetaStep;
-            return new Vector3(r * MathF.Cos(theta), r * MathF.Sin(theta), z);
+            return offset + new Vector3(r * MathF.Cos(theta), r * MathF.Sin(theta), z);
         }
     }
 }

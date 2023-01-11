@@ -21,17 +21,19 @@ namespace Scene3D.Helper
         private float kd = 1;
         private float ks = 1;
         private float m = 50;
+        private float fogMinZ = 1.868f;
+        private float fogMaxZ = 1.89f;
         public Drawer(int width, int height)
         {
             this.width = width;
             this.height = height;
             halfHeight = height / 2;
             halfWidth = width / 2;
-            zBuffor = new float[height, width];
-            zMutex = new Mutex[height, width];
-            for(int i = 0; i < height; i++)
+            zBuffor = new float[width, height];
+            zMutex = new Mutex[width, height];
+            for(int i = 0; i < width; i++)
             {
-                for(int j = 0; j < width; j++)
+                for(int j = 0; j < height; j++)
                 {
                     zMutex[i, j] = new Mutex();
                 }
@@ -40,10 +42,15 @@ namespace Scene3D.Helper
 
         public void Reset()
         {
-            for(int i = 0; i < height; i++)
+            float max = float.MinValue;
+            for(int i = 0; i < width; i++)
             {
-                for(int j = 0; j < width; j++)
+                for(int j = 0; j < height; j++)
                 {
+                    if(zBuffor[i, j] > max)
+                    {
+                        max = zBuffor[i, j];
+                    }
                     zBuffor[i, j] = float.MaxValue;
                 }
             }
@@ -52,20 +59,26 @@ namespace Scene3D.Helper
         public void Draw(FastBitmap fastBitmap, Triangle triangle, Vector3 vectorColor, Vector3 cameraPos, bool interpolateColor)
         {
             // Back face culling
-            bool acceptable = false;
-            for(int i = 0; i < 3; i++)
+            int possible = 3;
+            int possibleClip = 3;
+            for (int i = 0; i < 3; i++)
             {
-                Vector3 v0 = triangle.rotatedPositions[i];
-                v0.X *= fastBitmap.Width;
-                v0.Y *= fastBitmap.Height;
-                if (Vector3.Dot(v0 - cameraPos, Vector3.Normalize(triangle.rotatedNormals[i])) < 0)
+                if (Math.Abs(triangle.rotatedPositions[i].X) > 1 
+                    || Math.Abs(triangle.rotatedPositions[i].Y) > 1 
+                    || Math.Abs(triangle.rotatedPositions[i].Z) > 3.6f)
                 {
-                    acceptable = true;
-                    break;
+                    possibleClip--;
                 }
+                //Vector3 v0 = triangle.rotatedPositions[i];
+                //v0.X *= fastBitmap.Width;
+                //v0.Y *= fastBitmap.Height;
+                //if (Vector3.Dot(v0 - cameraPos, Vector3.Normalize(triangle.rotatedNormals[i])) > 0)
+                //{
+                //    possible--;
+                //}
             }
-            //if (!acceptable)
-            //    return;
+            if (possible == 0 || possibleClip == 0)
+                return;
 
             int[] ind = new int[3];
             int[] yval = new int[3];
@@ -119,7 +132,7 @@ namespace Scene3D.Helper
                 }
             }
 
-            for(y+=0; y < yMax; y++)
+            for(y+=0; y < Math.Min(yMax, fastBitmap.Height); y++)
             {
                 if(y == aetp0.YMax)
                 {
@@ -129,12 +142,14 @@ namespace Scene3D.Helper
                 {
                     aetp1 = new AETP(x1, y1, x2, y2);
                 }
-
-                int xp1 = aetp0.X;
-                int xp0 = aetp1.X;
-                if (xp0 > xp1)
-                    (xp0, xp1) = (xp1, xp0);
-                FillAETP(xp0, xp1, y, fastBitmap, vectorColor, triangle, lights, cornerColors, interpolateColor, cameraPos);
+                if(y >= 0)
+                {
+                    int xp1 = aetp0.X;
+                    int xp0 = aetp1.X;
+                    if (xp0 > xp1)
+                        (xp0, xp1) = (xp1, xp0);
+                    FillAETP(xp0, xp1, y, fastBitmap, vectorColor, triangle, lights, cornerColors, interpolateColor, cameraPos);
+                }
 
                 aetp0.Next();
                 aetp1.Next();
@@ -143,10 +158,8 @@ namespace Scene3D.Helper
 
         private void FillAETP(int x0, int x1, int y, FastBitmap fastBitmap, Vector3 vectorColor, Triangle triangle, List<ILight> lights, Vector3[] cornerColors, bool interpolateColor, Vector3 cameraPos)
         {
-            for(int x = x0; x <= x1; x++)
+            for(int x = Math.Max(x0, 0); x <= Math.Min(x1, fastBitmap.Width - 1); x++)
             {
-                if(x < 0 || x >= fastBitmap.Width || y < 0 || y >= fastBitmap.Height)
-                    continue;
                 float z = triangle.InterpolateZ(x, y, width, height);
                 zMutex[x, y].WaitOne();
                 if (z >= zBuffor[x, y])
@@ -156,16 +169,33 @@ namespace Scene3D.Helper
                 }
                 zBuffor[x, y] = z;
                 if(interpolateColor)
-                    fastBitmap.SetPixel(x, y, GetColorCornerInterpolated(triangle.GetBarycentricCoordinates(x, y, width, height), cornerColors));
+                    fastBitmap.SetPixel(x, y, GetFoggedColor(GetColorCornerInterpolated(triangle.GetBarycentricCoordinates(x, y, width, height), cornerColors), z));
                 else
                 {
                     var bar = triangle.GetBarycentricCoordinates(x, y, width, height);
                     var normal = triangle.rotatedNormals[0] * bar.X + triangle.rotatedNormals[1] * bar.Y + triangle.rotatedNormals[2] * bar.Z;
-                    fastBitmap.SetPixel(x, y, ColorFromVector(GetVectorColor(new Vector3(x, y, triangle.InterpolateZ(x, y, width, height)),
-                                                            normal, vectorColor, cameraPos, lights)));
+                    fastBitmap.SetPixel(x, y, GetFoggedColor(ColorFromVector(GetVectorColor(new Vector3(x, y, triangle.InterpolateZ(x, y, width, height)),
+                                                            normal, vectorColor, cameraPos, lights)), z));
                 }
                 zMutex[x, y].ReleaseMutex();
             }
+        }
+
+        private Color GetFoggedColor(Color color, float z)
+        {
+            //if(z <= fogMinZ)
+                return color;
+            //if(z >= fogMaxZ)
+            //    return Color.White;
+            //float coef = MathF.Cos((z - fogMinZ) * (MathF.PI / 2) / (fogMaxZ - fogMinZ));
+            //float coef = Math.Clamp((z - fogMinZ) / (fogMaxZ - fogMinZ), 0, 1);
+            //coef *= MathF.PI / 2;
+            //coef = MathF.Pow(MathF.Cos(coef), 2);
+            //coef = 1 - coef;
+            //int R = Math.Clamp((int)(color.R * (1 - coef) + 255 * coef), 0, 255);
+            //int G = Math.Clamp((int)(color.G * (1 - coef) + 255 * coef), 0, 255);
+            //int B = Math.Clamp((int)(color.B * (1 - coef) + 255 * coef), 0, 255);
+            //return Color.FromArgb(R, G, B);
         }
 
         private Color ColorFromVector(Vector3 color)
@@ -203,7 +233,7 @@ namespace Scene3D.Helper
 
                 var thisColor = objectColor * light.GetLightColor(L, m);
 
-                outColor += thisColor * (dotLN * kd +  MathF.Pow(dotVR, m) * ks);
+                outColor += thisColor * (Math.Max(dotLN, 0) * kd +  MathF.Pow(Math.Max(dotVR, 0), m) * ks);
             }
 
             return outColor;

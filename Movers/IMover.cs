@@ -9,6 +9,6 @@ namespace Scene3D.Movers
 {
     internal interface IMover
     {
-        public Vector3 GetNewPosition();
+        public Vector3 GetNewPosition(Vector3 offset);
     }
 }

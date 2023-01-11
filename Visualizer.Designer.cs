@@ -50,6 +50,7 @@
             this.buttonStep.Name = "buttonStep";
             this.buttonStep.Size = new System.Drawing.Size(75, 23);
             this.buttonStep.TabIndex = 1;
+            this.buttonStep.TabStop = false;
             this.buttonStep.Text = "Start";
             this.buttonStep.UseVisualStyleBackColor = true;
             this.buttonStep.Click += new System.EventHandler(this.buttonStep_Click);

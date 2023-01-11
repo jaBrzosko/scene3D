@@ -22,11 +22,11 @@ namespace Scene3D.Movers
             this.theta = 0;
             this.phi = 0;
         }
-        public Vector3 GetNewPosition()
+        public Vector3 GetNewPosition(Vector3 offset)
         {
             theta += thetaStep;
             phi += phiStep;
-            return new Vector3(r * MathF.Sin(theta) * MathF.Cos(phi),
+            return offset + new Vector3(r * MathF.Sin(theta) * MathF.Cos(phi),
                                r * MathF.Sin(theta) * MathF.Sin(phi),
                                r * MathF.Cos(theta));
         }

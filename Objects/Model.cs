@@ -19,6 +19,7 @@ namespace Scene3D.Objects
         public Vector3 AngleStep { get; set; }
 
         // Object relative movement and rate of its change
+        public Vector3 InitialPosition { get; set; }
         public Vector3 Movement { get; set; }
         public IMover Mover { get; set; }
 
@@ -39,6 +40,7 @@ namespace Scene3D.Objects
             Mover = mover;
             ObjectColor = Color.DarkOliveGreen;
             RotatedCenter = Vector3.Zero;
+            InitialPosition = Movement;
         }
 
         public Model(Model model)
@@ -64,7 +66,11 @@ namespace Scene3D.Objects
 
         public void MakeMovementStep()
         {
-            Movement = Mover.GetNewPosition();
+            Movement = Mover.GetNewPosition(InitialPosition);
+        }
+        public void Vibrate(Vibrator vibrator)
+        {
+            Movement += vibrator.GetVibration();
         }
 
         public void RotateAndMove(Matrix4x4 lookAtMatrix, Matrix4x4 perspectiveMatrix)

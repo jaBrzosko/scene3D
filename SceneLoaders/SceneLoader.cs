@@ -7,6 +7,7 @@ using Scene3D.Objects;
 using Scene3D.Helper;
 using Scene3D.Movers;
 using System.Numerics;
+using Scene3D.Lights;
 
 namespace Scene3D.SceneLoaders
 {
@@ -114,9 +115,25 @@ namespace Scene3D.SceneLoaders
             return modelCollection;
         }
 
-        public static ModelCollection LoadBasic(float aspectRatio)
+        public static ModelCollection SimpleSphere(float aspectRatio)
         {
             ModelCollection modelCollection = new ModelCollection(aspectRatio);
+            string objName = "FullSphereSmooth.obj";
+            //string objName = "FullSphere.obj";
+            string pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            var cube = FileReader.ReadObj(pathModel);
+            //cube.Angle = new Vector3(MathF.PI / 8, MathF.PI / 8, 0);
+            cube.AngleStep = new Vector3(0.02f, 0.02f, 0.02f);
+            cube.Scale = 4;
+            modelCollection.cameraPosOrigin = new Vector3(16.5f, 0, 0);
+            modelCollection.AddModel(cube);
+
+            return modelCollection;
+        }
+
+        public static ModelCollection LoadBasic(int width, int height)
+        {
+            ModelCollection modelCollection = new ModelCollection(width / height);
             string objName = "FullTorusNormalized.obj";
             //string objName = "FullSphere.obj";
             string pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
@@ -129,8 +146,8 @@ namespace Scene3D.SceneLoaders
             flyingTorus.Mover = new SphereMover(4.0f, MathF.PI / 40, 0);
 
             var torus2 = new Model(torus1);
-            torus1.Mover = new StationaryMover(new Vector3(0, 1.25f, 0));
-            torus2.Mover = new StationaryMover(new Vector3(0, -1.25f, 0));
+            torus1.InitialPosition = new Vector3(0, 1.25f, 0);
+            torus2.InitialPosition = new Vector3(0, -1.25f, 0);
 
             torus1.ObjectColor = Color.Chocolate;
             torus2.ObjectColor = Color.DarkKhaki;
@@ -139,7 +156,6 @@ namespace Scene3D.SceneLoaders
             pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
             var sphere1 = FileReader.ReadObj(pathModel);
             var centerSpher = new Model(sphere1);
-            //modelCollection.AddModel(centerSpher);
             sphere1.ObjectColor = Color.Magenta;
             sphere1.Scale = 0.5f;
             var sphere2 = new Model(sphere1);
@@ -148,11 +164,24 @@ namespace Scene3D.SceneLoaders
             sphere2.Mover = new LineMover(4, new Vector3(0, 0, -0.1f), new Vector3(0, 1.25f, 0));
             sphere2.ObjectColor = Color.YellowGreen;
 
+
+            //modelCollection.AddModel(centerSpher);
+            modelCollection.MoveVibrator = new Vibrator(0.1f);
             modelCollection.AddModel(torus1);
             modelCollection.AddModel(torus2);
             modelCollection.AddModel(sphere1);
             modelCollection.AddModel(sphere2);
-            modelCollection.AddModel(flyingTorus);
+            modelCollection.AddModel(flyingTorus, true);
+
+            modelCollection.cameraPosOrigin = new Vector3(10, 0, -5);
+
+            // Light
+            var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(4, 4, -4), width, height);
+            LightSingleton.AddLight(pointLight);
+            
+            var spotLight = new SpotLight(new Vector3(1, 1, 1), new Vector3(2, 0, 0), new Vector3(-1, 0, 0), width, height, 2);
+            LightSingleton.AddLight(spotLight);
+
 
             return modelCollection;
         }

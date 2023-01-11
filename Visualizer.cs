@@ -4,6 +4,7 @@ using Scene3D.Lights;
 using System.Numerics;
 using Scene3D.Movers;
 using Scene3D.Enums;
+using System.Globalization;
 
 namespace Scene3D
 {
@@ -12,29 +13,31 @@ namespace Scene3D
         private FastBitmap fastBitmap;
         private ModelCollection modelCollection;
         private Model moving;
+        private int movingIndex;
+
         private CameraType cameraType;
         private CircleMover circleMover;
         private bool interpolateColor;
+        private bool doVibrate;
         public Visualizer()
         {
             InitializeComponent();
+
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
 
             fastBitmap = new FastBitmap(canvas.Width, canvas.Height);
             canvas.Image = fastBitmap.Bitmap;
 
             //modelCollection = SceneLoaders.SceneLoader.LoadChess(canvas.Width / canvas.Height);
-            modelCollection = SceneLoaders.SceneLoader.LoadBasic(canvas.Width / canvas.Height);
+            modelCollection = SceneLoaders.SceneLoader.LoadBasic(canvas.Width, canvas.Height);
+            //modelCollection = SceneLoaders.SceneLoader.SimpleSphere(canvas.Width / canvas.Height);
             moving = modelCollection.Last;
-
-            var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(4, 4, 10), fastBitmap.Width, fastBitmap.Height);
-            LightSingleton.AddLight(pointLight);
-
-            //var spotLight = new SpotLight(new Vector3(1, 1, 1), new Vector3(1, 0, 0), new Vector3(-1, 0, 0), fastBitmap.Width, fastBitmap.Height, MathF.PI / 4);
-            //LightSingleton.AddLight(spotLight);
+            movingIndex = modelCollection.Count - 1;
 
             cameraType = CameraType.Stationary;
             circleMover = new CircleMover(modelCollection.CameraPos.Length(), 0.1f, modelCollection.CameraPos.Z);
             interpolateColor = true;
+            doVibrate = false;
 
             Redraw();
         }
@@ -46,7 +49,7 @@ namespace Scene3D
                 g.Clear(Color.White);
             }
             if(makeMove)
-                modelCollection.MakeSteps();
+                modelCollection.MakeSteps(doVibrate);
             switch (cameraType)
             {
                 case CameraType.Stationary:
@@ -58,18 +61,18 @@ namespace Scene3D
                 case CameraType.Following:
                     {
                         modelCollection.CameraPos = modelCollection.cameraPosOrigin;
-                        modelCollection.CameraTarget = moving.Movement * moving.Scale;
+                        modelCollection.CameraTarget = moving.Movement;
                         break;
                     }
                 case CameraType.Moving:
                     {
-                        modelCollection.CameraPos = moving.Movement * moving.Scale + modelCollection.cameraDistance;
-                        modelCollection.CameraTarget = moving.Movement * moving.Scale;
+                        modelCollection.CameraPos = moving.Movement + modelCollection.cameraDistance;
+                        modelCollection.CameraTarget = moving.Movement;
                         break;
                     }
                 case CameraType.Rotating:
                     {
-                        modelCollection.CameraPos = circleMover.GetNewPosition();
+                        modelCollection.CameraPos = circleMover.GetNewPosition(Vector3.Zero);
                         modelCollection.CameraTarget = modelCollection.cameraTargetOrigin;
                         break;
                     }
@@ -84,8 +87,12 @@ namespace Scene3D
 
         private void buttonStep_Click(object sender, EventArgs e)
         {
+            AnimationStartStop();
+        }
 
-            if(timer.Enabled)
+        private void AnimationStartStop()
+        {
+            if (timer.Enabled)
             {
                 timer.Stop();
                 buttonStep.Text = "Start";
@@ -95,7 +102,6 @@ namespace Scene3D
                 timer.Start();
                 buttonStep.Text = "Stop";
             }
-            
         }
 
         private void timer_Tick(object sender, EventArgs e)
@@ -141,6 +147,31 @@ namespace Scene3D
                     {
                         interpolateColor = false;
                         Redraw(false);
+                        break;
+                    }
+                case Keys.T:
+                    {
+                        doVibrate = !doVibrate;
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.Tab:
+                    {
+                        movingIndex++;
+                        if(movingIndex >= modelCollection.Count)
+                            movingIndex = 0;
+                        moving = modelCollection[movingIndex];
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.P:
+                    {
+                        AnimationStartStop();
+                        break;
+                    }
+                case Keys.O:
+                    {
+                        Redraw();
                         break;
                     }
             }

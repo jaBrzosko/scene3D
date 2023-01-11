@@ -19,13 +19,13 @@ namespace Scene3D.Movers
             this.radius = radius;
             position = initialPosition;
         }
-        public Vector3 GetNewPosition()
+        public Vector3 GetNewPosition(Vector3 offset)
         {
             if (position.Length() > radius)
                 speed *= -1;
             position += speed;
             
-            return position;
+            return offset + position;
         }
     }
 }

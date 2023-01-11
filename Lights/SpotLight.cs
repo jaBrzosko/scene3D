@@ -9,9 +9,13 @@ namespace Scene3D.Lights
 {
     internal class SpotLight : ILight
     {
-        public float LightAngle { get; set; }
-        public Vector3 LightDirection { get; set; }
-
+        public float Narrow { get; set; }
+        private Vector3 lightDirection;
+        public Vector3 LightDirection
+        {
+            get { return lightDirection; }
+            set { lightDirection = Vector3.Normalize(value); }
+        }
         public Vector3 LightColor { get; set; }
         private Vector3 position;
         public Vector3 Position
@@ -27,23 +31,24 @@ namespace Scene3D.Lights
         private int width;
         private int height;
 
-        public SpotLight(Vector3 lightColor, Vector3 position, Vector3 lightDirection, int width, int height, float angle)
+        public SpotLight(Vector3 lightColor, Vector3 position, Vector3 lightDirection, int width, int height, float narrow)
         {
             this.width = width;
             this.height = height;
             LightColor = lightColor;
             Position = position;
-            LightDirection = lightDirection;
-            LightAngle = angle;
+            LightDirection = Vector3.Normalize(lightDirection);
+            Narrow = narrow;
         }
         public Vector3 GetLightColor(Vector3 L, float m)
         {
-            var cos = Vector3.Dot(Vector3.Normalize(-LightDirection), L);
-            //if ( cos >   MathF.Cos(LightAngle))
-            //    return LightColor;
+            var cos = Vector3.Dot(-LightDirection, L);
+            //return LightColor * MathF.Pow(cos, 15);
+            //if (cos > MathF.Cos(LightAngle))
+            //return LightColor;
             //return Vector3.Zero;
-            cos = Math.Clamp((cos - MathF.Cos(LightAngle)) / 0.02f, 0f, 1f);
-            return LightColor * cos;
+            //cos = Math.Clamp((cos - MathF.Cos(LightAngle)) / 0.05f, 0f, 1f);
+            return LightColor * MathF.Pow(MathF.Cos(cos), Narrow);
         }
 
         public Vector3 GetWorldPosition()
