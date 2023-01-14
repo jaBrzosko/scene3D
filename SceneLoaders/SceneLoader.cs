@@ -17,7 +17,8 @@ namespace Scene3D.SceneLoaders
         {
             ModelCollection modelCollection = new ModelCollection(aspectRatio);
 
-            modelCollection.cameraPosOrigin = new Vector3(50, 50, -50) * 3/5;
+            modelCollection.cameraPosOrigin = new Vector3(50, 50, -50) * 4/5;
+            modelCollection.cameraDistance = new Vector3(20, 20, -20);
 
             // Chess board;
             string halfChessboardName = "HalfChessBoard.obj";
@@ -176,12 +177,86 @@ namespace Scene3D.SceneLoaders
             modelCollection.cameraPosOrigin = new Vector3(10, 0, -5);
 
             // Light
-            var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(4, 4, -4), width, height);
+            var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(4, 4, 10), width, height);
             LightSingleton.AddLight(pointLight);
             
             var spotLight = new SpotLight(new Vector3(1, 1, 1), new Vector3(2, 0, 0), new Vector3(-1, 0, 0), width, height, 2);
             LightSingleton.AddLight(spotLight);
 
+
+            return modelCollection;
+        }
+
+        public static ModelCollection LoadBetterChess(int width, int height)
+        {
+            ModelCollection modelCollection = new ModelCollection(width / height);
+            modelCollection.cameraPosOrigin = new Vector3(40, 0, -40);
+            modelCollection.cameraDistance = new Vector3(20, 0, -20);
+
+
+            string objName = "Cube.obj";
+            string pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            var cube = FileReader.ReadObj(pathModel);
+
+            var whiteColor = Color.Wheat;
+            var blackColor = Color.Gray;
+
+            var pieceWhite = Color.AntiqueWhite;
+            var pieceBlack = Color.DarkGray;
+
+            var initPos = -7f;
+            var step = 2f;
+
+            // Chessboard
+            for(int i = 0; i < 8; i++)
+            {
+                for(int j = 0; j < 8; j++)
+                {
+                    var model = new Model(cube);
+                    model.InitialPosition = new Vector3(initPos + i * step, initPos + j * step, 0);
+                    model.ObjectColor = ((i + j) & 1) == 0 ? whiteColor : blackColor;
+                    modelCollection.AddModel(model);
+                }
+            }
+
+            objName = "Pawn.obj";
+            pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            var pawn = FileReader.ReadObj(pathModel);
+            pawn.Scale = 0.9f;
+
+            var pawnOffset = 5;
+
+            // Pawn
+            for(int i = 0; i < 8; i++)
+            {
+                // white
+                var model = new Model(pawn);
+                model.InitialPosition = new Vector3(pawnOffset, initPos + i * step, 0);
+                model.ObjectColor = pieceWhite;
+                modelCollection.AddModel(model);
+
+
+                // black
+                model = new Model(pawn);
+                model.InitialPosition = new Vector3(-pawnOffset, initPos + i * step, 0);
+                model.ObjectColor = pieceBlack;
+                modelCollection.AddModel(model);
+            }
+
+            // Rook
+
+            // Bishop
+
+            // Knight
+
+            // Queen
+
+            // King
+            
+
+            // Light
+            var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(0, -5, 0), width, height);
+            LightSingleton.AddLight(pointLight);
 
             return modelCollection;
         }

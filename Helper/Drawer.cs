@@ -156,7 +156,7 @@ namespace Scene3D.Helper
             }
         }
 
-        private void FillAETP(int x0, int x1, int y, FastBitmap fastBitmap, Vector3 vectorColor, Triangle triangle, List<ILight> lights, Vector3[] cornerColors, bool interpolateColor, Vector3 cameraPos)
+        private void FillAETP(int x0, int x1, int y, FastBitmap fastBitmap, Vector3 vectorColor, Triangle triangle, List<Light> lights, Vector3[] cornerColors, bool interpolateColor, Vector3 cameraPos)
         {
             for(int x = Math.Max(x0, 0); x <= Math.Min(x1, fastBitmap.Width - 1); x++)
             {
@@ -216,7 +216,7 @@ namespace Scene3D.Helper
             return ColorFromVector(color);
         }
 
-        private Vector3 GetVectorColor(Vector3 position, Vector3 normal, Vector3 objectColor, Vector3 cameraPos, List<ILight> lights)
+        private Vector3 GetVectorColor(Vector3 position, Vector3 normal, Vector3 objectColor, Vector3 cameraPos, List<Light> lights)
         {
             Vector3 outColor = Vector3.Zero;
             normal = Vector3.Normalize(normal);

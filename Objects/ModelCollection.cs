@@ -30,7 +30,7 @@ namespace Scene3D.Objects
         public Vibrator MoveVibrator { get; set; }
         
         private float nearPlaneDistance = 1.0f;
-        private float farPlaneDistance = 2.0f;
+        private float farPlaneDistance = 100.0f;
         private float fov = 30 * MathF.PI / 180;
         private float aspectRatio;
         
@@ -72,6 +72,10 @@ namespace Scene3D.Objects
             foreach (var model in models)
             {
                 model.RotateAndMove(loakAtMat, perspectiveMat);
+            }
+            foreach (var light in Lights.LightSingleton.GetInstance())
+            {
+                light.Rotate(loakAtMat, perspectiveMat);
             }
         }
 

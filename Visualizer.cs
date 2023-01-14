@@ -29,13 +29,14 @@ namespace Scene3D
             canvas.Image = fastBitmap.Bitmap;
 
             //modelCollection = SceneLoaders.SceneLoader.LoadChess(canvas.Width / canvas.Height);
-            modelCollection = SceneLoaders.SceneLoader.LoadBasic(canvas.Width, canvas.Height);
+            //modelCollection = SceneLoaders.SceneLoader.LoadBasic(canvas.Width, canvas.Height);
             //modelCollection = SceneLoaders.SceneLoader.SimpleSphere(canvas.Width / canvas.Height);
+            modelCollection = SceneLoaders.SceneLoader.LoadBetterChess(canvas.Width, canvas.Height);
             moving = modelCollection.Last;
             movingIndex = modelCollection.Count - 1;
 
             cameraType = CameraType.Stationary;
-            circleMover = new CircleMover(modelCollection.CameraPos.Length(), 0.1f, modelCollection.CameraPos.Z);
+            circleMover = new CircleMover(modelCollection.cameraDistance.Length(), 0.1f, modelCollection.cameraPosOrigin.Z);
             interpolateColor = true;
             doVibrate = false;
 

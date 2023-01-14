@@ -8,19 +8,19 @@ namespace Scene3D.Lights
 {
     internal class LightSingleton
     {
-        private static List<ILight> lights;
+        private static List<Light> lights;
 
-        public static List<ILight> GetInstance()
+        public static List<Light> GetInstance()
         {
             if(lights == null)
-                lights = new List<ILight>();
+                lights = new List<Light>();
             return lights;
         }
 
-        public static void AddLight(ILight light)
+        public static void AddLight(Light light)
         {
             if (lights == null)
-                lights = new List<ILight>();
+                lights = new List<Light>();
             lights.Add(light);
         }
     }
