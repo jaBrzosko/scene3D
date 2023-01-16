@@ -64,7 +64,7 @@ namespace Scene3D.Objects
             Angle += AngleStep;
         }
 
-        public void MakeMovementStep()
+        public virtual void MakeMovementStep()
         {
             Movement = Mover.GetNewPosition(InitialPosition);
         }

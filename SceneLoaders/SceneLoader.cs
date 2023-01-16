@@ -8,6 +8,7 @@ using Scene3D.Helper;
 using Scene3D.Movers;
 using System.Numerics;
 using Scene3D.Lights;
+using Scene3D.Objects.Chess;
 
 namespace Scene3D.SceneLoaders
 {
@@ -204,8 +205,10 @@ namespace Scene3D.SceneLoaders
             var pieceWhite = Color.AntiqueWhite;
             var pieceBlack = Color.DarkGray;
 
-            var initPos = -7f;
-            var step = 2f;
+            var initPos = 7f;
+            var step = -2f;
+
+            int numberOfSteps = 20;
 
             // Chessboard
             for(int i = 0; i < 8; i++)
@@ -224,38 +227,117 @@ namespace Scene3D.SceneLoaders
             var pawn = FileReader.ReadObj(pathModel);
             pawn.Scale = 0.9f;
 
-            var pawnOffset = 5;
-
             // Pawn
             for(int i = 0; i < 8; i++)
             {
                 // white
-                var model = new Model(pawn);
-                model.InitialPosition = new Vector3(pawnOffset, initPos + i * step, 0);
-                model.ObjectColor = pieceWhite;
-                modelCollection.AddModel(model);
-
+                var piece = new Pawn(pawn, 1, i, initPos, step, numberOfSteps);
+                piece.ObjectColor = pieceWhite;
+                modelCollection.AddModel(piece);
 
                 // black
-                model = new Model(pawn);
-                model.InitialPosition = new Vector3(-pawnOffset, initPos + i * step, 0);
-                model.ObjectColor = pieceBlack;
-                modelCollection.AddModel(model);
+                piece = new Pawn(pawn, 6, i, initPos, step, numberOfSteps);
+                piece.ObjectColor = pieceBlack;
+                modelCollection.AddModel(piece);
             }
 
             // Rook
 
+            objName = "Rook.obj";
+            pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            var rook = FileReader.ReadObj(pathModel);
+            rook.Scale = 0.9f;
+
+
+            rook.ObjectColor = pieceWhite;
+            var rookWhite1 = new Rook(rook, 0, 0, initPos, step, numberOfSteps);
+            var rookWhite2 = new Rook(rook, 0, 7, initPos, step, numberOfSteps);
+
+            rook.ObjectColor = pieceBlack;
+            var rookBlack1 = new Rook(rook, 7, 0, initPos, step, numberOfSteps);
+            var rookBlack2 = new Rook(rook, 7, 7, initPos, step, numberOfSteps);
+
+            modelCollection.AddModel(rookWhite1);
+            modelCollection.AddModel(rookWhite2);
+            modelCollection.AddModel(rookBlack1);
+            modelCollection.AddModel(rookBlack2);
+
             // Bishop
+            objName = "Bishop.obj";
+            pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            var bishop = FileReader.ReadObj(pathModel);
+            bishop.Scale = 0.9f;
+
+
+            bishop.ObjectColor = pieceWhite;
+            var bishopWhite1 = new Bishop(bishop, 0, 2, initPos, step, numberOfSteps);
+            var bishopWhite2 = new Bishop(bishop, 0, 5, initPos, step, numberOfSteps);
+
+            bishop.ObjectColor = pieceBlack;
+            var bishopBlack1 = new Bishop(bishop, 7, 2, initPos, step, numberOfSteps);
+            var bishopBlack2 = new Bishop(bishop, 7, 5, initPos, step, numberOfSteps);
+
+            modelCollection.AddModel(bishopWhite1);
+            modelCollection.AddModel(bishopWhite2);
+            modelCollection.AddModel(bishopBlack1);
+            modelCollection.AddModel(bishopBlack2);
 
             // Knight
+            objName = "Knight.obj";
+            pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            var knight = FileReader.ReadObj(pathModel);
+            knight.Scale = 0.9f;
+
+
+            knight.ObjectColor = pieceWhite;
+            var knightWhite1 = new Bishop(knight, 0, 1, initPos, step, numberOfSteps);
+            var knightWhite2 = new Bishop(knight, 0, 6, initPos, step, numberOfSteps);
+
+            knight.ObjectColor = pieceBlack;
+            knight.Angle = new Vector3(0, 0, MathF.PI);
+            var knightBlack1 = new Bishop(knight, 7, 1, initPos, step, numberOfSteps);
+            var knightBlack2 = new Bishop(knight, 7, 6, initPos, step, numberOfSteps);
+
+            modelCollection.AddModel(knightWhite1);
+            modelCollection.AddModel(knightWhite2);
+            modelCollection.AddModel(knightBlack1);
+            modelCollection.AddModel(knightBlack2);
+
+            knightBlack1.Move(-2, -1);
 
             // Queen
 
+            objName = "King.obj";
+            pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            var queen = FileReader.ReadObj(pathModel);
+            queen.Scale = 0.9f;
+
+            var queenWhite = new Queen(queen, 0, 3, initPos, step, numberOfSteps);
+            queenWhite.ObjectColor = whiteColor;
+            modelCollection.AddModel(queenWhite);
+
+            var queenBlack = new Queen(queen, 7, 3, initPos, step, numberOfSteps);
+            queenBlack.ObjectColor = blackColor;
+            modelCollection.AddModel(queenBlack);
+
             // King
+
+            objName = "Queen.obj";
+            pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            var king = FileReader.ReadObj(pathModel);
+            king.Scale = 0.9f;
             
+            var kingWhite = new King(king, 0, 4, initPos, step, numberOfSteps);
+            kingWhite.ObjectColor = whiteColor;
+            modelCollection.AddModel(kingWhite);
+
+            var kingBlack = new King(king, 7, 4, initPos, step, numberOfSteps);
+            kingBlack.ObjectColor = blackColor;
+            modelCollection.AddModel(kingBlack);
+
 
             // Light
-            var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(0, -5, 0), width, height);
+            var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(0, -20, 0), width, height);
             LightSingleton.AddLight(pointLight);
 
             return modelCollection;

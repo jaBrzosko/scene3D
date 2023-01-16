@@ -81,13 +81,17 @@ namespace Scene3D.Objects
 
         public void Draw(FastBitmap fastBitmap, bool interpolateColor)
         {
-            var drawer = DrawerSingleton.GetInstance(fastBitmap.Width, fastBitmap.Height);
+                var drawer = DrawerSingleton.GetInstance(fastBitmap.Width, fastBitmap.Height);
             drawer.Reset();
             Vector3 passedCameraPos = new Vector3(CameraPos.X * fastBitmap.Width, CameraPos.Y * fastBitmap.Height, CameraPos.Z);
-            foreach(var model in models)
+            foreach (var model in models)
             {
                 model.Draw(fastBitmap, passedCameraPos, interpolateColor);
             }
+            //Parallel.ForEach(models, model =>
+            //{
+            //    model.Draw(fastBitmap, passedCameraPos, interpolateColor);
+            //});
         }
     }
 }
