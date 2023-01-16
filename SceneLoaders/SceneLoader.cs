@@ -188,11 +188,11 @@ namespace Scene3D.SceneLoaders
             return modelCollection;
         }
 
-        public static ModelCollection LoadBetterChess(int width, int height)
+        public static ChessGame LoadBetterChess(int width, int height)
         {
-            ModelCollection modelCollection = new ModelCollection(width / height);
-            modelCollection.cameraPosOrigin = new Vector3(40, 0, -40);
-            modelCollection.cameraDistance = new Vector3(20, 0, -20);
+            ChessGame chessGame = new ChessGame(width / height);
+            chessGame.cameraPosOrigin = new Vector3(40, 0, -40);
+            chessGame.cameraDistance = new Vector3(20, 0, -20);
 
 
             string objName = "Cube.obj";
@@ -208,7 +208,7 @@ namespace Scene3D.SceneLoaders
             var initPos = 7f;
             var step = -2f;
 
-            int numberOfSteps = 20;
+            int numberOfSteps = 10;
 
             // Chessboard
             for(int i = 0; i < 8; i++)
@@ -218,7 +218,7 @@ namespace Scene3D.SceneLoaders
                     var model = new Model(cube);
                     model.InitialPosition = new Vector3(initPos + i * step, initPos + j * step, 0);
                     model.ObjectColor = ((i + j) & 1) == 0 ? whiteColor : blackColor;
-                    modelCollection.AddModel(model);
+                    chessGame.AddModel(model);
                 }
             }
 
@@ -231,14 +231,14 @@ namespace Scene3D.SceneLoaders
             for(int i = 0; i < 8; i++)
             {
                 // white
-                var piece = new Pawn(pawn, 1, i, initPos, step, numberOfSteps);
+                var piece = new Pawn(pawn, 1, i, initPos, step, numberOfSteps, true);
                 piece.ObjectColor = pieceWhite;
-                modelCollection.AddModel(piece);
+                chessGame.AddPiece(piece, i, 1);
 
                 // black
-                piece = new Pawn(pawn, 6, i, initPos, step, numberOfSteps);
+                piece = new Pawn(pawn, 6, i, initPos, step, numberOfSteps, false);
                 piece.ObjectColor = pieceBlack;
-                modelCollection.AddModel(piece);
+                chessGame.AddPiece(piece, i, 6);
             }
 
             // Rook
@@ -257,10 +257,10 @@ namespace Scene3D.SceneLoaders
             var rookBlack1 = new Rook(rook, 7, 0, initPos, step, numberOfSteps);
             var rookBlack2 = new Rook(rook, 7, 7, initPos, step, numberOfSteps);
 
-            modelCollection.AddModel(rookWhite1);
-            modelCollection.AddModel(rookWhite2);
-            modelCollection.AddModel(rookBlack1);
-            modelCollection.AddModel(rookBlack2);
+            chessGame.AddPiece(rookWhite1, 0, 0);
+            chessGame.AddPiece(rookWhite2, 7, 0);
+            chessGame.AddPiece(rookBlack1, 0, 7);
+            chessGame.AddPiece(rookBlack2, 7, 7);
 
             // Bishop
             objName = "Bishop.obj";
@@ -277,10 +277,10 @@ namespace Scene3D.SceneLoaders
             var bishopBlack1 = new Bishop(bishop, 7, 2, initPos, step, numberOfSteps);
             var bishopBlack2 = new Bishop(bishop, 7, 5, initPos, step, numberOfSteps);
 
-            modelCollection.AddModel(bishopWhite1);
-            modelCollection.AddModel(bishopWhite2);
-            modelCollection.AddModel(bishopBlack1);
-            modelCollection.AddModel(bishopBlack2);
+            chessGame.AddPiece(bishopWhite1, 2, 0);
+            chessGame.AddPiece(bishopWhite2, 5, 0);
+            chessGame.AddPiece(bishopBlack1, 2, 7);
+            chessGame.AddPiece(bishopBlack2, 5, 7);
 
             // Knight
             objName = "Knight.obj";
@@ -298,12 +298,10 @@ namespace Scene3D.SceneLoaders
             var knightBlack1 = new Bishop(knight, 7, 1, initPos, step, numberOfSteps);
             var knightBlack2 = new Bishop(knight, 7, 6, initPos, step, numberOfSteps);
 
-            modelCollection.AddModel(knightWhite1);
-            modelCollection.AddModel(knightWhite2);
-            modelCollection.AddModel(knightBlack1);
-            modelCollection.AddModel(knightBlack2);
-
-            knightBlack1.Move(-2, -1);
+            chessGame.AddPiece(knightWhite1, 1, 0);
+            chessGame.AddPiece(knightWhite2, 6, 0);
+            chessGame.AddPiece(knightBlack1, 1, 7);
+            chessGame.AddPiece(knightBlack2, 6, 7);
 
             // Queen
 
@@ -314,11 +312,11 @@ namespace Scene3D.SceneLoaders
 
             var queenWhite = new Queen(queen, 0, 3, initPos, step, numberOfSteps);
             queenWhite.ObjectColor = whiteColor;
-            modelCollection.AddModel(queenWhite);
+            chessGame.AddPiece(queenWhite, 3, 0);
 
             var queenBlack = new Queen(queen, 7, 3, initPos, step, numberOfSteps);
             queenBlack.ObjectColor = blackColor;
-            modelCollection.AddModel(queenBlack);
+            chessGame.AddPiece(queenBlack, 3, 7);
 
             // King
 
@@ -329,18 +327,44 @@ namespace Scene3D.SceneLoaders
             
             var kingWhite = new King(king, 0, 4, initPos, step, numberOfSteps);
             kingWhite.ObjectColor = whiteColor;
-            modelCollection.AddModel(kingWhite);
+            chessGame.AddPiece(kingWhite, 4, 0);
 
             var kingBlack = new King(king, 7, 4, initPos, step, numberOfSteps);
             kingBlack.ObjectColor = blackColor;
-            modelCollection.AddModel(kingBlack);
+            chessGame.AddPiece(kingBlack, 4, 7);
 
 
             // Light
             var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(0, -20, 0), width, height);
             LightSingleton.AddLight(pointLight);
 
-            return modelCollection;
+            // Moves
+
+            // French - advanced
+
+            //chessGame.AddMove("e4");
+            //chessGame.AddMove("e6");
+            //chessGame.AddMove("d4");
+            //chessGame.AddMove("d5");
+            //chessGame.AddMove("e5");
+
+            // Danish gambit
+
+            //chessGame.AddMove("e4");
+            //chessGame.AddMove("e5");
+            //chessGame.AddMove("d4");
+            //chessGame.AddMove("exd4");
+
+            // Scandinavian
+
+            chessGame.AddMove("e4");
+            chessGame.AddMove("d5");
+            chessGame.AddMove("exd5");
+            chessGame.AddMove("e6");
+            chessGame.AddMove("dxe6");
+
+
+            return chessGame;
         }
 
     }

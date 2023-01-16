@@ -9,6 +9,23 @@ namespace Scene3D.Objects.Chess
     internal class King: Piece
     {
         public King(Model model, int row, int col, float offset, float step, int numberOfSteps) : base(model, row, col, offset, step, numberOfSteps)
-        {}
+        { }
+
+        public override bool CanMove(int x, int y, Piece[,] pieces)
+        {
+            if (!base.CanMove(x, y, pieces))
+                return false;
+            if (Math.Abs(x) <= 1 && Math.Abs(y) <= 1 && pieces[row + x, row + y] == null)
+                return true;
+            if(x == 0 && !Moved)
+            {
+                if (y == 2 && pieces[row, col + 2] is Rook && !pieces[row, col + 2].Moved)
+                    return true;
+                if (y == -2 && pieces[row, col - 2] is Rook && !pieces[row, col + 2].Moved)
+                    return true;
+            }
+
+            return false;
+        }
     }
 }

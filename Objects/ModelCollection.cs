@@ -51,6 +51,11 @@ namespace Scene3D.Objects
             if (isVibrable)
                 vibrable.Add(model);
         }
+        public void RemoveModel(Model model)
+        {
+            models.Remove(model);
+            vibrable.Remove(model);
+        }
 
         public void MakeSteps(bool doVibrate)
         {

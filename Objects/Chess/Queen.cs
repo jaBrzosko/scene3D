@@ -10,5 +10,12 @@ namespace Scene3D.Objects.Chess
     {
         public Queen(Model model, int row, int col, float offset, float step, int numberOfSteps) : base(model, row, col, offset, step, numberOfSteps)
         { }
+
+        public override bool CanMove(int x, int y, Piece[,] pieces)
+        {
+            if (!base.CanMove(x, y, pieces))
+                return false;
+            return true;
+        }
     }
 }

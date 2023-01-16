@@ -5,13 +5,14 @@ using System.Numerics;
 using Scene3D.Movers;
 using Scene3D.Enums;
 using System.Globalization;
+using Scene3D.Objects.Chess;
 
 namespace Scene3D
 {
     public partial class Visualizer : Form
     {
         private FastBitmap fastBitmap;
-        private ModelCollection modelCollection;
+        private ChessGame chessGame;
         private Model moving;
         private int movingIndex;
 
@@ -31,12 +32,12 @@ namespace Scene3D
             //modelCollection = SceneLoaders.SceneLoader.LoadChess(canvas.Width / canvas.Height);
             //modelCollection = SceneLoaders.SceneLoader.LoadBasic(canvas.Width, canvas.Height);
             //modelCollection = SceneLoaders.SceneLoader.SimpleSphere(canvas.Width / canvas.Height);
-            modelCollection = SceneLoaders.SceneLoader.LoadBetterChess(canvas.Width, canvas.Height);
-            moving = modelCollection.Last;
-            movingIndex = modelCollection.Count - 1;
+            chessGame = SceneLoaders.SceneLoader.LoadBetterChess(canvas.Width, canvas.Height);
+            moving = chessGame.Last;
+            movingIndex = chessGame.Count - 1;
 
             cameraType = CameraType.Stationary;
-            circleMover = new CircleMover(modelCollection.cameraDistance.Length(), 0.1f, modelCollection.cameraPosOrigin.Z);
+            circleMover = new CircleMover(chessGame.cameraDistance.Length(), 0.1f, chessGame.cameraPosOrigin.Z);
             interpolateColor = true;
             doVibrate = false;
 
@@ -50,37 +51,40 @@ namespace Scene3D
                 g.Clear(Color.White);
             }
             if(makeMove)
-                modelCollection.MakeSteps(doVibrate);
+            {
+                chessGame.MakeSteps(doVibrate);
+                chessGame.MakeChessMove();
+            }
             switch (cameraType)
             {
                 case CameraType.Stationary:
                     {
-                        modelCollection.CameraPos = modelCollection.cameraPosOrigin;
-                        modelCollection.CameraTarget = modelCollection.cameraTargetOrigin;
+                        chessGame.CameraPos = chessGame.cameraPosOrigin;
+                        chessGame.CameraTarget = chessGame.cameraTargetOrigin;
                         break;
                     }
                 case CameraType.Following:
                     {
-                        modelCollection.CameraPos = modelCollection.cameraPosOrigin;
-                        modelCollection.CameraTarget = moving.Movement;
+                        chessGame.CameraPos = chessGame.cameraPosOrigin;
+                        chessGame.CameraTarget = moving.Movement;
                         break;
                     }
                 case CameraType.Moving:
                     {
-                        modelCollection.CameraPos = moving.Movement + modelCollection.cameraDistance;
-                        modelCollection.CameraTarget = moving.Movement;
+                        chessGame.CameraPos = moving.Movement + chessGame.cameraDistance;
+                        chessGame.CameraTarget = moving.Movement;
                         break;
                     }
                 case CameraType.Rotating:
                     {
-                        modelCollection.CameraPos = circleMover.GetNewPosition(Vector3.Zero);
-                        modelCollection.CameraTarget = modelCollection.cameraTargetOrigin;
+                        chessGame.CameraPos = circleMover.GetNewPosition(Vector3.Zero);
+                        chessGame.CameraTarget = chessGame.cameraTargetOrigin;
                         break;
                     }
             }
             //light.Position = moving.Movement;
-            modelCollection.Rotate();
-            modelCollection.Draw(fastBitmap, interpolateColor);
+            chessGame.Rotate();
+            chessGame.Draw(fastBitmap, interpolateColor);
             
 
             canvas.Refresh();
@@ -159,9 +163,9 @@ namespace Scene3D
                 case Keys.Tab:
                     {
                         movingIndex++;
-                        if(movingIndex >= modelCollection.Count)
+                        if(movingIndex >= chessGame.Count)
                             movingIndex = 0;
-                        moving = modelCollection[movingIndex];
+                        moving = chessGame[movingIndex];
                         Redraw(false);
                         break;
                     }
