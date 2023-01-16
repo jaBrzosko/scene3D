@@ -208,7 +208,7 @@ namespace Scene3D.SceneLoaders
             var initPos = 7f;
             var step = -2f;
 
-            int numberOfSteps = 10;
+            int numberOfSteps = 2;
 
             // Chessboard
             for(int i = 0; i < 8; i++)
@@ -250,12 +250,12 @@ namespace Scene3D.SceneLoaders
 
 
             rook.ObjectColor = pieceWhite;
-            var rookWhite1 = new Rook(rook, 0, 0, initPos, step, numberOfSteps);
-            var rookWhite2 = new Rook(rook, 0, 7, initPos, step, numberOfSteps);
+            var rookWhite1 = new Rook(rook, 0, 0, initPos, step, numberOfSteps, true);
+            var rookWhite2 = new Rook(rook, 0, 7, initPos, step, numberOfSteps, true);
 
             rook.ObjectColor = pieceBlack;
-            var rookBlack1 = new Rook(rook, 7, 0, initPos, step, numberOfSteps);
-            var rookBlack2 = new Rook(rook, 7, 7, initPos, step, numberOfSteps);
+            var rookBlack1 = new Rook(rook, 7, 0, initPos, step, numberOfSteps, false);
+            var rookBlack2 = new Rook(rook, 7, 7, initPos, step, numberOfSteps, false);
 
             chessGame.AddPiece(rookWhite1, 0, 0);
             chessGame.AddPiece(rookWhite2, 7, 0);
@@ -270,12 +270,12 @@ namespace Scene3D.SceneLoaders
 
 
             bishop.ObjectColor = pieceWhite;
-            var bishopWhite1 = new Bishop(bishop, 0, 2, initPos, step, numberOfSteps);
-            var bishopWhite2 = new Bishop(bishop, 0, 5, initPos, step, numberOfSteps);
+            var bishopWhite1 = new Bishop(bishop, 0, 2, initPos, step, numberOfSteps, true);
+            var bishopWhite2 = new Bishop(bishop, 0, 5, initPos, step, numberOfSteps, true);
 
             bishop.ObjectColor = pieceBlack;
-            var bishopBlack1 = new Bishop(bishop, 7, 2, initPos, step, numberOfSteps);
-            var bishopBlack2 = new Bishop(bishop, 7, 5, initPos, step, numberOfSteps);
+            var bishopBlack1 = new Bishop(bishop, 7, 2, initPos, step, numberOfSteps, false);
+            var bishopBlack2 = new Bishop(bishop, 7, 5, initPos, step, numberOfSteps, false);
 
             chessGame.AddPiece(bishopWhite1, 2, 0);
             chessGame.AddPiece(bishopWhite2, 5, 0);
@@ -290,13 +290,13 @@ namespace Scene3D.SceneLoaders
 
 
             knight.ObjectColor = pieceWhite;
-            var knightWhite1 = new Bishop(knight, 0, 1, initPos, step, numberOfSteps);
-            var knightWhite2 = new Bishop(knight, 0, 6, initPos, step, numberOfSteps);
+            var knightWhite1 = new Knight(knight, 0, 1, initPos, step, numberOfSteps, true);
+            var knightWhite2 = new Knight(knight, 0, 6, initPos, step, numberOfSteps, true);
 
             knight.ObjectColor = pieceBlack;
             knight.Angle = new Vector3(0, 0, MathF.PI);
-            var knightBlack1 = new Bishop(knight, 7, 1, initPos, step, numberOfSteps);
-            var knightBlack2 = new Bishop(knight, 7, 6, initPos, step, numberOfSteps);
+            var knightBlack1 = new Knight(knight, 7, 1, initPos, step, numberOfSteps, false);
+            var knightBlack2 = new Knight(knight, 7, 6, initPos, step, numberOfSteps, false);
 
             chessGame.AddPiece(knightWhite1, 1, 0);
             chessGame.AddPiece(knightWhite2, 6, 0);
@@ -305,33 +305,33 @@ namespace Scene3D.SceneLoaders
 
             // Queen
 
-            objName = "King.obj";
+            objName = "Queen.obj";
             pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
             var queen = FileReader.ReadObj(pathModel);
             queen.Scale = 0.9f;
 
-            var queenWhite = new Queen(queen, 0, 3, initPos, step, numberOfSteps);
+            var queenWhite = new Queen(queen, 0, 4, initPos, step, numberOfSteps, true);
             queenWhite.ObjectColor = whiteColor;
-            chessGame.AddPiece(queenWhite, 3, 0);
+            chessGame.AddPiece(queenWhite, 4, 0);
 
-            var queenBlack = new Queen(queen, 7, 3, initPos, step, numberOfSteps);
+            var queenBlack = new Queen(queen, 7, 4, initPos, step, numberOfSteps, false);
             queenBlack.ObjectColor = blackColor;
-            chessGame.AddPiece(queenBlack, 3, 7);
+            chessGame.AddPiece(queenBlack, 4, 7);
 
             // King
 
-            objName = "Queen.obj";
+            objName = "King.obj";
             pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
             var king = FileReader.ReadObj(pathModel);
             king.Scale = 0.9f;
             
-            var kingWhite = new King(king, 0, 4, initPos, step, numberOfSteps);
+            var kingWhite = new King(king, 0, 3, initPos, step, numberOfSteps, true);
             kingWhite.ObjectColor = whiteColor;
-            chessGame.AddPiece(kingWhite, 4, 0);
+            chessGame.AddPiece(kingWhite, 3, 0);
 
-            var kingBlack = new King(king, 7, 4, initPos, step, numberOfSteps);
+            var kingBlack = new King(king, 7, 3, initPos, step, numberOfSteps, false);
             kingBlack.ObjectColor = blackColor;
-            chessGame.AddPiece(kingBlack, 4, 7);
+            chessGame.AddPiece(kingBlack, 3, 7);
 
 
             // Light
@@ -357,11 +357,60 @@ namespace Scene3D.SceneLoaders
 
             // Scandinavian
 
-            chessGame.AddMove("e4");
-            chessGame.AddMove("d5");
-            chessGame.AddMove("exd5");
-            chessGame.AddMove("e6");
-            chessGame.AddMove("dxe6");
+            //chessGame.AddMove("e4");
+            //chessGame.AddMove("d5");
+            //chessGame.AddMove("exd5");
+
+            //chessGame.AddMove("e4");
+            //chessGame.AddMove("Nc6");
+            //chessGame.AddMove("e5");
+            //chessGame.AddMove("Nxe5");
+            //chessGame.AddMove("a3");
+            //chessGame.AddMove("Nc4");
+
+            //chessGame.AddMove("b3");
+            //chessGame.AddMove("b6");
+            //chessGame.AddMove("Bb2");
+            //chessGame.AddMove("Ba6");
+            //chessGame.AddMove("Bxg7");
+            //chessGame.AddMove("Bxg7");
+            //chessGame.AddMove("Nf3");
+            //chessGame.AddMove("Bxa1");
+
+            //chessGame.AddMove("a4");
+            //chessGame.AddMove("h5");
+            //chessGame.AddMove("Ra3");
+            //chessGame.AddMove("Rh6");
+            //chessGame.AddMove("Rb3");
+            //chessGame.AddMove("a5");
+            //chessGame.AddMove("Rxb7");
+            //chessGame.AddMove("Bxb7");
+            //chessGame.AddMove("Nf3");
+            //chessGame.AddMove("Bxc6");
+
+            // Fools mate
+
+            //chessGame.AddMove("e4");
+            //chessGame.AddMove("e5");
+            //chessGame.AddMove("Qh5");
+            //chessGame.AddMove("Nc6");
+            //chessGame.AddMove("Bc4");
+            //chessGame.AddMove("h6");
+            //chessGame.AddMove("Qxf7");
+
+            //  Bongcloud
+            //chessGame.AddMove("e4");
+            //chessGame.AddMove("e5");
+            //chessGame.AddMove("Ke2");
+            //chessGame.AddMove("Ke7");
+
+            var moves = "d4;d5;Nf3;c5;g3;Nc6;Bg2;Bg4;O-O;Nf6;h3;Bh5;g4;Bg6;Nh4;Be4;Ng6;Bxg2;f3;hxg6;Kxg2;e6;c3;Bd6;Be3;cxd4;Bf2;d3;exd3;Qc7;d4;Bh2;Nd2;Bf4;Qe2;Bxd2;Qxd2;O-O-O;Qc2;Na5;Qd3;Nc4;b3;Nd6;Rfc1;Nd7;a4;Nb6;c4;dxc4;bxc4;Nbxc4;Rc2;Qd7;Rac1;Kb8;Bg3;Rc8;Bxd6;Qxd6;Rxc4;Rxc4;Rxc4;Rc8;Qc3;Rxc4;Qxc4;Qc7;Qd3;Qb6;Qe3;Qb2;Kg3;Qb4;Qe5;Kc8;Qxg7;Qd6;Kg2;Qa3;Qxf7;Qa2;Kg3;Qxa4;Qxe6;Kc7;Qxg6;Qxd4;Qe4;Qd6;Qf4;Qxf4;Kxf4;a5;g5;a4;g6;a3;g7;a2;g8=Q;a1=Q;Qf7;Kb6;Qe6;Ka7;Qd7;Qa6;Qg4;Qd6;Kg5;Qc5;Kh4;Qf8;Kg3;Qh8;h4;Qe5;f4;Qe1;Kh3;Qe3";
+            //var moves = "Nf3;h6;Na3;h5;Nc4;h4;Nfe5";
+            //var moves = "h4;a5;h5;a4;h6;a3;hxg7;axb2;gxh8=Q;bxc1=R;Qg7;Rxd1;Kxd1";
+            foreach (var move in moves.Split(";"))
+            {
+                chessGame.AddMove(move);
+            }
 
 
             return chessGame;

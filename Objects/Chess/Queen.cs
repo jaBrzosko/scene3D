@@ -8,7 +8,10 @@ namespace Scene3D.Objects.Chess
 {
     internal class Queen : Piece
     {
-        public Queen(Model model, int row, int col, float offset, float step, int numberOfSteps) : base(model, row, col, offset, step, numberOfSteps)
+        public Queen(Piece piece, Model newModel): base(piece, newModel)
+        {}
+        public Queen(Model model, int row, int col, float offset, float step, int numberOfSteps, bool isWhite) : 
+            base(model, row, col, offset, step, numberOfSteps, isWhite)
         { }
 
         public override bool CanMove(int x, int y, Piece[,] pieces)

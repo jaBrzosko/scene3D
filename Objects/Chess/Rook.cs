@@ -8,7 +8,10 @@ namespace Scene3D.Objects.Chess
 {
     internal class Rook : Piece
     {
-        public Rook(Model model, int row, int col, float offset, float step, int numberOfSteps) : base(model, row, col, offset, step, numberOfSteps)
+        public Rook(Piece piece, Model newModel) : base(piece, newModel)
+        { }
+        public Rook(Model model, int row, int col, float offset, float step, int numberOfSteps, bool isWhite) : 
+            base(model, row, col, offset, step, numberOfSteps, isWhite)
         { }
 
         public override bool CanMove(int x, int y, Piece[,] pieces)
@@ -21,7 +24,7 @@ namespace Scene3D.Objects.Chess
             {
                 for (int i = 1; i <= x; i++)
                 {
-                    if (pieces[row + i, col] != null)
+                    if (pieces[col + i, row] != null)
                         return false;
                 }
             }
@@ -29,7 +32,7 @@ namespace Scene3D.Objects.Chess
             {
                 for (int i = x; i < 0; i++)
                 {
-                    if (pieces[row + i, col] != null)
+                    if (pieces[col + i, row] != null)
                         return false;
                 }
             }
@@ -37,7 +40,7 @@ namespace Scene3D.Objects.Chess
             {
                 for (int i = 1; i <= y; i++)
                 {
-                    if (pieces[row, col + i] != null)
+                    if (pieces[col, row + i] != null)
                         return false;
                 }
             }
@@ -45,11 +48,11 @@ namespace Scene3D.Objects.Chess
             {
                 for (int i = y; i < 0; i++)
                 {
-                    if (pieces[row, col + i] != null)
+                    if (pieces[col, row + i] != null)
                         return false;
                 }
             }
-            return false;
+            return true;
         }
 
         public override bool CanCapture(int x, int y, Piece[,] pieces)
@@ -62,37 +65,37 @@ namespace Scene3D.Objects.Chess
             {
                 for (int i = 1; i < x; i++)
                 {
-                    if (pieces[row + i, col] != null)
+                    if (pieces[col + i, row] != null)
                         return false;
                 }
-                return pieces[row + x, col] != null;
+                return pieces[col + x, row] != null;
             }
             else if (x < 0)
             {
-                for (int i = x; i < 0; i++)
+                for (int i = x + 1; i < 0; i++)
                 {
-                    if (pieces[row + i, col] != null)
+                    if (pieces[col + i, row] != null)
                         return false;
                 }
-                return pieces[row + x, col] != null;
+                return pieces[col + x, row] != null;
             }
             else if (y > 0)
             {
                 for (int i = 1; i < y; i++)
                 {
-                    if (pieces[row, col + i] != null)
+                    if (pieces[col, row + i] != null)
                         return false;
                 }
-                return pieces[row, col + y] != null;
+                return pieces[col, row + y] != null;
             }
             else if (y < 0)
             {
-                for (int i = y; i < 0; i++)
+                for (int i = y + 1; i < 0; i++)
                 {
-                    if (pieces[row, col + i] != null)
+                    if (pieces[col, row + i] != null)
                         return false;
                 }
-                return pieces[row, col + y] != null;
+                return pieces[col, row + y] != null;
             }
             return false;
         }
