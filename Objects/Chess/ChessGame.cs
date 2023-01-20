@@ -15,7 +15,7 @@ namespace Scene3D.Objects.Chess
         private Piece?[,] chessBoard;
         private Queue<string> pendingMoves;
         private bool isWhiteMove;
-        private Piece? moving;
+        public Piece? Moving { get; set; }
         private Piece? capturable;
         private (int x, int y)? promotableCords;
         private char? promoCode;
@@ -39,11 +39,11 @@ namespace Scene3D.Objects.Chess
 
         public void MakeChessMove()
         {
-            if(moving != null)
+            if(Moving != null)
             {
-                if (moving.IsMoving)
+                if (Moving.IsMoving)
                     return;
-                moving = null;
+                Moving = null;
                 if (capturable is not null)
                 {
                     RemoveModel(capturable);
@@ -112,7 +112,7 @@ namespace Scene3D.Objects.Chess
             if (temp == null)
                 return;
             isWhiteMove = !isWhiteMove;
-            moving = temp;
+            Moving = temp;
             pendingMoves.Dequeue();
         }
 

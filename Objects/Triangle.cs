@@ -52,6 +52,21 @@ namespace Scene3D.Objects
             }
         }
 
+        public (Vector3 position, Vector3 normal)[] SimpleRotate(Matrix4x4 modelMatrix)
+        {
+            var ret = new (Vector3 pos, Vector3 n)[3];
+
+            for (int i = 0; i < positions.Length; i++)
+            {
+                ret[i].n = Vector3.TransformNormal(normals[i], modelMatrix);
+                var temp = Vector4.Transform(positions[i], modelMatrix);
+                temp /= temp.W;
+                ret[i].pos = new Vector3(temp.X, temp.Y, temp.Z);
+            }
+
+            return ret;
+        }
+
         public float InterpolateZ(int x, int y, int width, int height)
         {
             var cords = GetBarycentricCoordinates(x, y, width, height);

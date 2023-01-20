@@ -91,6 +91,8 @@ namespace Scene3D.Helper
                 {
                     if (!int.TryParse(face[i], out int x))
                     {
+                        if (i == 1)
+                            continue;
                         return null;
                     }
 

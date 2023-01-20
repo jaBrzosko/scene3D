@@ -57,7 +57,6 @@
             // 
             // timer
             // 
-            this.timer.Interval = 50;
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // Visualizer

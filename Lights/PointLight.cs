@@ -14,7 +14,7 @@ namespace Scene3D.Lights
 
         public override Vector3 GetLightColor(Vector3 L, float m)
         {
-            return LightColor;
+            return isTurnedOn ? LightColor : Vector3.Zero;
         }
     }
 }

@@ -21,8 +21,8 @@ namespace Scene3D.Helper
         private float kd = 1;
         private float ks = 1;
         private float m = 50;
-        private float fogMinZ = 1.868f;
-        private float fogMaxZ = 1.89f;
+        private float fogMinZ = 0.97f;
+        private float fogMaxZ = 0.99f;
         public Drawer(int width, int height)
         {
             this.width = width;
@@ -56,7 +56,7 @@ namespace Scene3D.Helper
             }
         }
 
-        public void Draw(FastBitmap fastBitmap, Triangle triangle, Vector3 vectorColor, Vector3 cameraPos, bool interpolateColor)
+        public void Draw(FastBitmap fastBitmap, Triangle triangle, Matrix4x4 modelMatrix, Vector3 vectorColor, Vector3 cameraPos, bool interpolateColor, bool showFog)
         {
             // Back face culling
             int possible = 3;
@@ -64,8 +64,7 @@ namespace Scene3D.Helper
             for (int i = 0; i < 3; i++)
             {
                 if (Math.Abs(triangle.rotatedPositions[i].X) > 1 
-                    || Math.Abs(triangle.rotatedPositions[i].Y) > 1 
-                    || Math.Abs(triangle.rotatedPositions[i].Z) > 3.6f)
+                    || Math.Abs(triangle.rotatedPositions[i].Y) > 1)
                 {
                     possibleClip--;
                 }
@@ -79,6 +78,9 @@ namespace Scene3D.Helper
             }
             if (possible == 0 || possibleClip == 0)
                 return;
+
+            // triangle in local
+            var localTriangle = triangle.SimpleRotate(modelMatrix);
 
             int[] ind = new int[3];
             int[] yval = new int[3];
@@ -125,10 +127,8 @@ namespace Scene3D.Helper
             {
                 for(int i = 0; i < 3; i++)
                 {
-                    cornerColors[i] = GetVectorColor(new Vector3(triangle.rotatedPositions[ind[i]].X * halfWidth + halfWidth,
-                                                                 triangle.rotatedPositions[ind[i]].Y * halfHeight + halfHeight,
-                                                                 triangle.rotatedPositions[ind[i]].Z),
-                                            triangle.rotatedNormals[i], vectorColor, cameraPos, lights);
+                    cornerColors[i] = GetVectorColor(localTriangle[i].position,
+                                            localTriangle[i].normal, vectorColor, cameraPos, lights);
                 }
             }
 
@@ -148,7 +148,7 @@ namespace Scene3D.Helper
                     int xp0 = aetp1.X;
                     if (xp0 > xp1)
                         (xp0, xp1) = (xp1, xp0);
-                    FillAETP(xp0, xp1, y, fastBitmap, vectorColor, triangle, lights, cornerColors, interpolateColor, cameraPos);
+                    FillAETP(xp0, xp1, y, fastBitmap, vectorColor, triangle, lights, cornerColors, interpolateColor, cameraPos, localTriangle, showFog);
                 }
 
                 aetp0.Next();
@@ -156,7 +156,8 @@ namespace Scene3D.Helper
             }
         }
 
-        private void FillAETP(int x0, int x1, int y, FastBitmap fastBitmap, Vector3 vectorColor, Triangle triangle, List<Light> lights, Vector3[] cornerColors, bool interpolateColor, Vector3 cameraPos)
+        private void FillAETP(int x0, int x1, int y, FastBitmap fastBitmap, Vector3 vectorColor, Triangle triangle, 
+            List<Light> lights, Vector3[] cornerColors, bool interpolateColor, Vector3 cameraPos, (Vector3 pos, Vector3 n)[] localTriangle, bool showFog)
         {
             for(int x = Math.Max(x0, 0); x <= Math.Min(x1, fastBitmap.Width - 1); x++)
             {
@@ -169,13 +170,22 @@ namespace Scene3D.Helper
                 }
                 zBuffor[x, y] = z;
                 if(interpolateColor)
-                    fastBitmap.SetPixel(x, y, GetFoggedColor(GetColorCornerInterpolated(triangle.GetBarycentricCoordinates(x, y, width, height), cornerColors), z));
+                {
+                    var color = GetColorCornerInterpolated(triangle.GetBarycentricCoordinates(x, y, width, height), cornerColors);
+                    if (showFog)
+                        color = GetFoggedColor(color, z);
+                    fastBitmap.SetPixel(x, y, color);
+                }
                 else
                 {
                     var bar = triangle.GetBarycentricCoordinates(x, y, width, height);
-                    var normal = triangle.rotatedNormals[0] * bar.X + triangle.rotatedNormals[1] * bar.Y + triangle.rotatedNormals[2] * bar.Z;
-                    fastBitmap.SetPixel(x, y, GetFoggedColor(ColorFromVector(GetVectorColor(new Vector3(x, y, triangle.InterpolateZ(x, y, width, height)),
-                                                            normal, vectorColor, cameraPos, lights)), z));
+                    //var normal = triangle.rotatedNormals[0] * bar.X + triangle.rotatedNormals[1] * bar.Y + triangle.rotatedNormals[2] * bar.Z;
+                    var normal = localTriangle[0].n * bar.X + localTriangle[1].n * bar.Y + localTriangle[2].n * bar.Z;
+                    var position = localTriangle[0].pos * bar.X + localTriangle[1].pos * bar.Y + localTriangle[2].pos * bar.Z;
+                    var color = ColorFromVector(GetVectorColor(position, normal, vectorColor, cameraPos, lights));
+                    if (showFog)
+                        color = GetFoggedColor(color, z);
+                    fastBitmap.SetPixel(x, y, color);
                 }
                 zMutex[x, y].ReleaseMutex();
             }
@@ -183,19 +193,18 @@ namespace Scene3D.Helper
 
         private Color GetFoggedColor(Color color, float z)
         {
-            //if(z <= fogMinZ)
+            if (z <= fogMinZ)
                 return color;
-            //if(z >= fogMaxZ)
-            //    return Color.White;
-            //float coef = MathF.Cos((z - fogMinZ) * (MathF.PI / 2) / (fogMaxZ - fogMinZ));
+            if (z >= fogMaxZ)
+                return Color.White;
+            float coef = MathF.Cos((z - fogMinZ) * (MathF.PI / 2) / (fogMaxZ - fogMinZ));
             //float coef = Math.Clamp((z - fogMinZ) / (fogMaxZ - fogMinZ), 0, 1);
-            //coef *= MathF.PI / 2;
-            //coef = MathF.Pow(MathF.Cos(coef), 2);
-            //coef = 1 - coef;
-            //int R = Math.Clamp((int)(color.R * (1 - coef) + 255 * coef), 0, 255);
-            //int G = Math.Clamp((int)(color.G * (1 - coef) + 255 * coef), 0, 255);
-            //int B = Math.Clamp((int)(color.B * (1 - coef) + 255 * coef), 0, 255);
-            //return Color.FromArgb(R, G, B);
+            coef *= MathF.PI / 2;
+            coef = MathF.Pow(MathF.Cos(coef), 2);
+            int R = Math.Clamp((int)(color.R * (1 - coef) + 255 * coef), 0, 255);
+            int G = Math.Clamp((int)(color.G * (1 - coef) + 255 * coef), 0, 255);
+            int B = Math.Clamp((int)(color.B * (1 - coef) + 255 * coef), 0, 255);
+            return Color.FromArgb(R, G, B);
         }
 
         private Color ColorFromVector(Vector3 color)

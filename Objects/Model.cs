@@ -75,12 +75,7 @@ namespace Scene3D.Objects
 
         public void RotateAndMove(Matrix4x4 lookAtMatrix, Matrix4x4 perspectiveMatrix)
         {
-            var translation = Matrix4x4.CreateTranslation(Movement);
-            var scale = Matrix4x4.CreateScale(Scale);
-            var rotX = Matrix4x4.CreateRotationX(Angle.X);
-            var rotY = Matrix4x4.CreateRotationY(Angle.Y);
-            var rotZ = Matrix4x4.CreateRotationZ(Angle.Z);
-            var model = scale * rotX * rotY * rotZ * translation;
+            var model = GetModelMatrix();
             var PVM = model * lookAtMatrix * perspectiveMatrix;
             foreach(var triangle in faces)
             {
@@ -91,18 +86,29 @@ namespace Scene3D.Objects
             RotatedCenter = new Vector3(temp.X, temp.Y, temp.Z);
         }
 
-        public void Draw(FastBitmap fastBitmap, Vector3 cameraPos, bool interpolateColor)
+        public void Draw(FastBitmap fastBitmap, Vector3 cameraPos, bool interpolateColor, bool showFog)
         {
+            var model = GetModelMatrix();
             var drawer = DrawerSingleton.GetInstance(fastBitmap.Width, fastBitmap.Height);
             Vector3 vectorColor = new Vector3((float)ObjectColor.R / 255, (float)ObjectColor.G / 255, (float)ObjectColor.B / 255);
             Parallel.ForEach(faces, face =>
            {
-               drawer.Draw(fastBitmap, face, vectorColor, cameraPos, interpolateColor);
+               drawer.Draw(fastBitmap, face, model, vectorColor, cameraPos, interpolateColor, showFog);
            });
             //foreach(var face in faces)
             //{
             //    drawer.Draw(fastBitmap, face, vectorColor, cameraPos);
             //}
+        }
+
+        private Matrix4x4 GetModelMatrix()
+        {
+            var translation = Matrix4x4.CreateTranslation(Movement);
+            var scale = Matrix4x4.CreateScale(Scale);
+            var rotX = Matrix4x4.CreateRotationX(Angle.X);
+            var rotY = Matrix4x4.CreateRotationY(Angle.Y);
+            var rotZ = Matrix4x4.CreateRotationZ(Angle.Z);
+            return scale * rotX * rotY * rotZ * translation;
         }
     }
 }

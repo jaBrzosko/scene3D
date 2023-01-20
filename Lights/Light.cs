@@ -9,22 +9,13 @@ namespace Scene3D.Lights
 {
     internal abstract class Light
     {
-        public Vector3 LightColor { get; set; }
-
-        private Vector3 position;
-        public Vector3 Position
-        {
-            get { return position; }
-            set
-            {
-                position = value;
-                WorldPosition = new Vector3(width * position.X, height * position.Y, position.Z);
-            }
-        }
+        public Vector3 LightColor { get; set; } 
+        public Vector3 Position { get; set; }
         private Vector3 WorldPosition { get; set; }
         private Vector3 RotatedWorldPosition { get; set; }
         private int width;
         private int height;
+        protected bool isTurnedOn;
 
         public Light(Vector3 lightColor, Vector3 position, int width, int height)
         {
@@ -32,18 +23,23 @@ namespace Scene3D.Lights
             this.height = height;
             LightColor = lightColor;
             Position = position;
+            isTurnedOn = true;
         }
 
         public abstract Vector3 GetLightColor(Vector3 L, float m);
         public Vector3 GetWorldPosition()
         {
-            return RotatedWorldPosition;
+            return Position;
 
         }
         public void Rotate(Matrix4x4 lookAt, Matrix4x4 perspective)
         {
             var temp = Vector3.Transform(Position, lookAt * perspective);
             RotatedWorldPosition = new Vector3(temp.X * width, temp.Y * height, temp.Z);
+        }
+        public void ChangeOnOff()
+        {
+            isTurnedOn = !isTurnedOn;
         }
     }
 }

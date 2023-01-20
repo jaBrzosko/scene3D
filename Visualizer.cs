@@ -19,6 +19,7 @@ namespace Scene3D
         private CameraType cameraType;
         private CircleMover circleMover;
         private bool interpolateColor;
+        private bool showFog;
         private bool doVibrate;
         public Visualizer()
         {
@@ -30,7 +31,7 @@ namespace Scene3D
             canvas.Image = fastBitmap.Bitmap;
 
             //modelCollection = SceneLoaders.SceneLoader.LoadChess(canvas.Width / canvas.Height);
-            //modelCollection = SceneLoaders.SceneLoader.LoadBasic(canvas.Width, canvas.Height);
+            //chessGame = SceneLoaders.SceneLoader.LoadBasic(canvas.Width, canvas.Height);
             //modelCollection = SceneLoaders.SceneLoader.SimpleSphere(canvas.Width / canvas.Height);
             chessGame = SceneLoaders.SceneLoader.LoadBetterChess(canvas.Width, canvas.Height);
             moving = chessGame.Last;
@@ -40,6 +41,7 @@ namespace Scene3D
             circleMover = new CircleMover(chessGame.cameraDistance.Length(), 0.1f, chessGame.cameraPosOrigin.Z);
             interpolateColor = true;
             doVibrate = false;
+            showFog = true;
 
             Redraw();
         }
@@ -65,12 +67,16 @@ namespace Scene3D
                     }
                 case CameraType.Following:
                     {
+                        if (chessGame.Moving is not null)
+                            moving = chessGame.Moving;
                         chessGame.CameraPos = chessGame.cameraPosOrigin;
                         chessGame.CameraTarget = moving.Movement;
                         break;
                     }
                 case CameraType.Moving:
                     {
+                        if (chessGame.Moving is not null)
+                            moving = chessGame.Moving;
                         chessGame.CameraPos = moving.Movement + chessGame.cameraDistance;
                         chessGame.CameraTarget = moving.Movement;
                         break;
@@ -84,7 +90,7 @@ namespace Scene3D
             }
             //light.Position = moving.Movement;
             chessGame.Rotate();
-            chessGame.Draw(fastBitmap, interpolateColor);
+            chessGame.Draw(fastBitmap, interpolateColor, showFog);
             
 
             canvas.Refresh();
@@ -179,6 +185,82 @@ namespace Scene3D
                         Redraw();
                         break;
                     }
+                case Keys.N:
+                    {
+                        foreach(var light in LightSingleton.GetInstance())
+                        {
+                            if (light is PointLight)
+                                light.ChangeOnOff();
+                        }
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.Oemplus:
+                    {
+                        foreach (var light in LightSingleton.GetInstance())
+                        {
+                            if (light is SpotLight)
+                                ((SpotLight)light).ChangeDirection(true);
+                        }
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.OemMinus:
+                    {
+                        foreach (var light in LightSingleton.GetInstance())
+                        {
+                            if (light is SpotLight)
+                                ((SpotLight)light).ChangeDirection(false);
+                        }
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.NumPad0:
+                    {
+                        TurnOffSpotLight(0);
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.NumPad1:
+                    {
+                        TurnOffSpotLight(1);
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.NumPad2:
+                    {
+                        TurnOffSpotLight(2);
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.NumPad3:
+                    {
+                        TurnOffSpotLight(3);
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.F:
+                    {
+                        showFog = !showFog;
+                        Redraw(false);
+                        break;
+                    }
+            }
+        }
+
+        private void TurnOffSpotLight(int n)
+        {
+            foreach (var light in LightSingleton.GetInstance())
+            {
+                if (light is SpotLight)
+                {
+                    if (n == 0)
+                    {
+                        light.ChangeOnOff();
+                        return;
+                    }
+                    n--;
+                }
             }
         }
     }

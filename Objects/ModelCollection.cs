@@ -84,14 +84,15 @@ namespace Scene3D.Objects
             }
         }
 
-        public void Draw(FastBitmap fastBitmap, bool interpolateColor)
+        public void Draw(FastBitmap fastBitmap, bool interpolateColor, bool showFog)
         {
-                var drawer = DrawerSingleton.GetInstance(fastBitmap.Width, fastBitmap.Height);
+            var drawer = DrawerSingleton.GetInstance(fastBitmap.Width, fastBitmap.Height);
             drawer.Reset();
-            Vector3 passedCameraPos = new Vector3(CameraPos.X * fastBitmap.Width, CameraPos.Y * fastBitmap.Height, CameraPos.Z);
+            //Vector3 passedCameraPos = new Vector3(CameraPos.X * fastBitmap.Width, CameraPos.Y * fastBitmap.Height, CameraPos.Z);
+            Vector3 passedCameraPos = CameraPos;
             foreach (var model in models)
             {
-                model.Draw(fastBitmap, passedCameraPos, interpolateColor);
+                model.Draw(fastBitmap, passedCameraPos, interpolateColor, showFog);
             }
             //Parallel.ForEach(models, model =>
             //{
