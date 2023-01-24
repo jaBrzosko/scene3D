@@ -45,6 +45,16 @@ namespace Scene3D.Objects
             MoveVibrator = new Vibrator(0);
         }
 
+        public void ResetVibrable()
+        {
+            vibrable.Clear();
+        }
+
+        public void SetVibrable(Model model)
+        {
+            vibrable.Add(model);
+        }
+
         public void AddModel(Model model, bool isVibrable = false)
         {
             models.Add(model);
@@ -78,21 +88,15 @@ namespace Scene3D.Objects
             {
                 model.RotateAndMove(loakAtMat, perspectiveMat);
             }
-            foreach (var light in Lights.LightSingleton.GetInstance())
-            {
-                light.Rotate(loakAtMat, perspectiveMat);
-            }
         }
 
         public void Draw(FastBitmap fastBitmap, bool interpolateColor, bool showFog)
         {
             var drawer = DrawerSingleton.GetInstance(fastBitmap.Width, fastBitmap.Height);
             drawer.Reset();
-            //Vector3 passedCameraPos = new Vector3(CameraPos.X * fastBitmap.Width, CameraPos.Y * fastBitmap.Height, CameraPos.Z);
-            Vector3 passedCameraPos = CameraPos;
             foreach (var model in models)
             {
-                model.Draw(fastBitmap, passedCameraPos, interpolateColor, showFog);
+                model.Draw(fastBitmap, CameraPos, interpolateColor, showFog);
             }
             //Parallel.ForEach(models, model =>
             //{

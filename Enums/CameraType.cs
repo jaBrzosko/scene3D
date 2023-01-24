@@ -8,9 +8,13 @@ namespace Scene3D.Enums
 {
     internal enum CameraType
     {
-        Stationary,
-        Following,
-        Moving,
-        Rotating
+        StationaryWhite,
+        StationaryBlack,
+        FollowingWhite,
+        FollowingBlack,
+        MovingWhite,
+        MovingBlack,
+        Rotating,
+        FreeMoving
     }
 }

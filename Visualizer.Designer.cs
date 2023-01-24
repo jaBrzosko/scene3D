@@ -30,7 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             this.canvas = new System.Windows.Forms.PictureBox();
-            this.buttonStep = new System.Windows.Forms.Button();
             this.timer = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.canvas)).BeginInit();
             this.SuspendLayout();
@@ -44,17 +43,6 @@
             this.canvas.TabIndex = 0;
             this.canvas.TabStop = false;
             // 
-            // buttonStep
-            // 
-            this.buttonStep.Location = new System.Drawing.Point(725, 12);
-            this.buttonStep.Name = "buttonStep";
-            this.buttonStep.Size = new System.Drawing.Size(75, 23);
-            this.buttonStep.TabIndex = 1;
-            this.buttonStep.TabStop = false;
-            this.buttonStep.Text = "Start";
-            this.buttonStep.UseVisualStyleBackColor = true;
-            this.buttonStep.Click += new System.EventHandler(this.buttonStep_Click);
-            // 
             // timer
             // 
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
@@ -64,7 +52,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 800);
-            this.Controls.Add(this.buttonStep);
             this.Controls.Add(this.canvas);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
@@ -80,7 +67,6 @@
         #endregion
 
         private PictureBox canvas;
-        private Button buttonStep;
         private System.Windows.Forms.Timer timer;
     }
 }

@@ -17,6 +17,7 @@ namespace Scene3D.Lights
             get { return lightDirection; }
             set { lightDirection = Vector3.Normalize(value); }
         }
+
         private int height;
 
         public SpotLight(Vector3 lightColor, Vector3 position, Vector3 lightDirection, Vector3 directionIncrement, int width, int height, float narrow)
@@ -31,11 +32,6 @@ namespace Scene3D.Lights
             if (!isTurnedOn)
                 return Vector3.Zero;
             var cos = Vector3.Dot(-LightDirection, L);
-            //return LightColor * MathF.Pow(cos, 15);
-            //if (cos > MathF.Cos(LightAngle))
-            //return LightColor;
-            //return Vector3.Zero;
-            //cos = Math.Clamp((cos - MathF.Cos(LightAngle)) / 0.05f, 0f, 1f);
             return LightColor * MathF.Pow(cos, Narrow);
         }
 

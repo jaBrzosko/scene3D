@@ -195,9 +195,6 @@ namespace Scene3D.SceneLoaders
             chessGame.cameraDistance = new Vector3(20, 0, -20);
 
 
-            string objName = "Cube.obj";
-            string pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
-            var cube = FileReader.ReadObj(pathModel);
 
             var whiteColor = Color.Wheat;
             var blackColor = Color.Gray;
@@ -208,12 +205,28 @@ namespace Scene3D.SceneLoaders
             var initPos = 7f;
             var step = -2f;
 
-            int numberOfSteps = 5;
+            int numberOfSteps = 4;
+
+            //string objName = "HalfChessBoardWhite.obj";
+            //string pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            //var boardWhite = FileReader.ReadObj(pathModel);
+            //boardWhite.ObjectColor = whiteColor;
+            //chessGame.AddModel(boardWhite);
+
+            //objName = "HalfChessBoardBlack.obj";
+            //pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            //var boardBlack = FileReader.ReadObj(pathModel);
+            //boardBlack.ObjectColor = blackColor;
+            //chessGame.AddModel(boardBlack);
+
+            string objName = "Cube.obj";
+            string pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
+            var cube = FileReader.ReadObj(pathModel);
 
             // Chessboard
-            for(int i = 0; i < 8; i++)
+            for (int i = 0; i < 8; i++)
             {
-                for(int j = 0; j < 8; j++)
+                for (int j = 0; j < 8; j++)
                 {
                     var model = new Model(cube);
                     model.InitialPosition = new Vector3(initPos + i * step, initPos + j * step, 0);
@@ -272,6 +285,9 @@ namespace Scene3D.SceneLoaders
             bishop.ObjectColor = pieceWhite;
             var bishopWhite1 = new Bishop(bishop, 0, 2, initPos, step, numberOfSteps, true);
             var bishopWhite2 = new Bishop(bishop, 0, 5, initPos, step, numberOfSteps, true);
+            bishopWhite1.Angle = new Vector3(0, 0, MathF.PI);
+            bishopWhite2.Angle = new Vector3(0, 0, MathF.PI);
+
 
             bishop.ObjectColor = pieceBlack;
             var bishopBlack1 = new Bishop(bishop, 7, 2, initPos, step, numberOfSteps, false);
@@ -324,7 +340,7 @@ namespace Scene3D.SceneLoaders
             objName = "King.obj";
             pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
             var king = FileReader.ReadObj(pathModel);
-            king.Scale = 0.9f;
+            king.Scale = 0.45f;
             
             var kingWhite = new King(king, 0, 3, initPos, step, numberOfSteps, true);
             kingWhite.ObjectColor = pieceWhite;
@@ -333,6 +349,7 @@ namespace Scene3D.SceneLoaders
             var kingBlack = new King(king, 7, 3, initPos, step, numberOfSteps, false);
             kingBlack.ObjectColor = pieceBlack;
             chessGame.AddPiece(kingBlack, 3, 7);
+
 
             // Moves
 
@@ -430,22 +447,7 @@ namespace Scene3D.SceneLoaders
             var pointLight = new PointLight(new Vector3(1, 1, 1), new Vector3(0, 0, -10), width, height);
             LightSingleton.AddLight(pointLight);
 
-            //pointLight = new PointLight(new Vector3(1, 1, 1) / 5, new Vector3(-m, -20, -m), width, height);
-            //LightSingleton.AddLight(pointLight);
-            //pointLight = new PointLight(new Vector3(1, 1, 1) / 5, new Vector3(-m, -20, m), width, height);
-            //LightSingleton.AddLight(pointLight);
-            //pointLight = new PointLight(new Vector3(1, 1, 1) / 5, new Vector3(m, -20, -m), width, height);
-            //LightSingleton.AddLight(pointLight);
-            //pointLight = new PointLight(new Vector3(1, 1, 1) / 5, new Vector3(m, -20, m), width, height);
-            //LightSingleton.AddLight(pointLight);
-
-            //objName = "FullTorus.obj";
-            //pathModel = Path.Combine(Environment.CurrentDirectory, "data\\", objName);
-            //var torus = FileReader.ReadObj(pathModel);
-            //torus.Mover = new CircleMover(10, 0.1f, 0.5f);
-            //torus.AngleStep = Vector3.One / 10;
-            //torus.ObjectColor = Color.Red;
-            //chessGame.AddModel(torus);
+            chessGame.MoveVibrator = new Vibrator(0.1f);
 
             return chessGame;
         }

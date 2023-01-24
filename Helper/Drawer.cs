@@ -17,7 +17,7 @@ namespace Scene3D.Helper
         private int halfHeight;
         private int halfWidth;
         private float[,] zBuffor;
-        private Mutex[,] zMutex;
+        private object[,] zMutex;
         private float kd = 1;
         private float ks = 1;
         private float m = 50;
@@ -30,12 +30,12 @@ namespace Scene3D.Helper
             halfHeight = height / 2;
             halfWidth = width / 2;
             zBuffor = new float[width, height];
-            zMutex = new Mutex[width, height];
+            zMutex = new object[width, height];
             for(int i = 0; i < width; i++)
             {
                 for(int j = 0; j < height; j++)
                 {
-                    zMutex[i, j] = new Mutex();
+                    zMutex[i, j] = new object();
                 }
             }
         }
@@ -58,6 +58,10 @@ namespace Scene3D.Helper
 
         public void Draw(FastBitmap fastBitmap, Triangle triangle, Matrix4x4 modelMatrix, Vector3 vectorColor, Vector3 cameraPos, bool interpolateColor, bool showFog)
         {
+
+            // triangle in local
+            var localTriangle = triangle.SimpleRotate(modelMatrix);
+
             // Back face culling
             int possible = 3;
             int possibleClip = 3;
@@ -69,18 +73,17 @@ namespace Scene3D.Helper
                     possibleClip--;
                 }
                 //Vector3 v0 = triangle.rotatedPositions[i];
+                Vector3 v0 = localTriangle[i].position;
                 //v0.X *= fastBitmap.Width;
                 //v0.Y *= fastBitmap.Height;
+                if (Vector3.Dot(v0 - cameraPos, Vector3.Normalize(localTriangle[i].normal)) > 0)
                 //if (Vector3.Dot(v0 - cameraPos, Vector3.Normalize(triangle.rotatedNormals[i])) > 0)
-                //{
-                //    possible--;
-                //}
+                {
+                    possible--;
+                }
             }
             if (possible == 0 || possibleClip == 0)
                 return;
-
-            // triangle in local
-            var localTriangle = triangle.SimpleRotate(modelMatrix);
 
             int[] ind = new int[3];
             int[] yval = new int[3];
@@ -159,35 +162,36 @@ namespace Scene3D.Helper
         private void FillAETP(int x0, int x1, int y, FastBitmap fastBitmap, Vector3 vectorColor, Triangle triangle, 
             List<Light> lights, Vector3[] cornerColors, bool interpolateColor, Vector3 cameraPos, (Vector3 pos, Vector3 n)[] localTriangle, bool showFog)
         {
-            for(int x = Math.Max(x0, 0); x <= Math.Min(x1, fastBitmap.Width - 1); x++)
+            for (int x = Math.Max(x0, 0); x <= Math.Min(x1, fastBitmap.Width - 1); x++)
             {
                 float z = triangle.InterpolateZ(x, y, width, height);
-                zMutex[x, y].WaitOne();
-                if (z >= zBuffor[x, y])
+                lock (zMutex[x, y])
                 {
-                    zMutex[x, y].ReleaseMutex();
-                    continue;
+
+                    if (z >= zBuffor[x, y])
+                    {
+                        continue;
+                    }
+                    zBuffor[x, y] = z;
+                    if (interpolateColor)
+                    {
+                        var color = GetColorCornerInterpolated(triangle.GetBarycentricCoordinates(x, y, width, height), cornerColors);
+                        if (showFog)
+                            color = GetFoggedColor(color, z);
+                        fastBitmap.SetPixel(x, y, color);
+                    }
+                    else
+                    {
+                        var bar = triangle.GetBarycentricCoordinates(x, y, width, height);
+                        //var normal = triangle.rotatedNormals[0] * bar.X + triangle.rotatedNormals[1] * bar.Y + triangle.rotatedNormals[2] * bar.Z;
+                        var normal = localTriangle[0].n * bar.X + localTriangle[1].n * bar.Y + localTriangle[2].n * bar.Z;
+                        var position = localTriangle[0].pos * bar.X + localTriangle[1].pos * bar.Y + localTriangle[2].pos * bar.Z;
+                        var color = ColorFromVector(GetVectorColor(position, normal, vectorColor, cameraPos, lights));
+                        if (showFog)
+                            color = GetFoggedColor(color, z);
+                        fastBitmap.SetPixel(x, y, color);
+                    }
                 }
-                zBuffor[x, y] = z;
-                if(interpolateColor)
-                {
-                    var color = GetColorCornerInterpolated(triangle.GetBarycentricCoordinates(x, y, width, height), cornerColors);
-                    if (showFog)
-                        color = GetFoggedColor(color, z);
-                    fastBitmap.SetPixel(x, y, color);
-                }
-                else
-                {
-                    var bar = triangle.GetBarycentricCoordinates(x, y, width, height);
-                    //var normal = triangle.rotatedNormals[0] * bar.X + triangle.rotatedNormals[1] * bar.Y + triangle.rotatedNormals[2] * bar.Z;
-                    var normal = localTriangle[0].n * bar.X + localTriangle[1].n * bar.Y + localTriangle[2].n * bar.Z;
-                    var position = localTriangle[0].pos * bar.X + localTriangle[1].pos * bar.Y + localTriangle[2].pos * bar.Z;
-                    var color = ColorFromVector(GetVectorColor(position, normal, vectorColor, cameraPos, lights));
-                    if (showFog)
-                        color = GetFoggedColor(color, z);
-                    fastBitmap.SetPixel(x, y, color);
-                }
-                zMutex[x, y].ReleaseMutex();
             }
         }
 

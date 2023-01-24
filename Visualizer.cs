@@ -21,6 +21,10 @@ namespace Scene3D
         private bool interpolateColor;
         private bool showFog;
         private bool doVibrate;
+        private bool rotateMoving;
+        private float nightAndDayDirection;
+        private Vector3 freeCamera;
+        private Vector3 cameraAngle;
         public Visualizer()
         {
             InitializeComponent();
@@ -37,11 +41,13 @@ namespace Scene3D
             moving = chessGame.Last;
             movingIndex = chessGame.Count - 1;
 
-            cameraType = CameraType.Stationary;
+            cameraType = CameraType.StationaryWhite;
             circleMover = new CircleMover(chessGame.cameraDistance.Length(), 0.1f, chessGame.cameraPosOrigin.Z);
             interpolateColor = true;
             doVibrate = false;
-            showFog = true;
+            showFog = false;
+            rotateMoving = false;
+            nightAndDayDirection = 0.1f;
 
             Redraw();
         }
@@ -52,32 +58,57 @@ namespace Scene3D
             {
                 g.Clear(Color.White);
             }
-            if(makeMove)
+            if (chessGame.Moving is not null)
+                moving = chessGame.Moving;
+            if (makeMove)
             {
+                if(doVibrate)
+                {
+                    chessGame.ResetVibrable();
+                    chessGame.SetVibrable(moving);
+                }
                 chessGame.MakeSteps(doVibrate);
-                chessGame.MakeChessMove();
+                chessGame.MakeChessMove(rotateMoving);
+                ChangeSpotLights();
             }
             switch (cameraType)
             {
-                case CameraType.Stationary:
+                case CameraType.StationaryWhite:
                     {
                         chessGame.CameraPos = chessGame.cameraPosOrigin;
                         chessGame.CameraTarget = chessGame.cameraTargetOrigin;
                         break;
                     }
-                case CameraType.Following:
+                case CameraType.StationaryBlack:
                     {
-                        if (chessGame.Moving is not null)
-                            moving = chessGame.Moving;
+                        var t = chessGame.cameraPosOrigin;
+                        chessGame.CameraPos = new Vector3(-t.X, -t.Y, t.Z);
+                        chessGame.CameraTarget = chessGame.cameraTargetOrigin;
+                        break;
+                    }
+                case CameraType.FollowingWhite:
+                    {
                         chessGame.CameraPos = chessGame.cameraPosOrigin;
                         chessGame.CameraTarget = moving.Movement;
                         break;
                     }
-                case CameraType.Moving:
+                case CameraType.FollowingBlack:
                     {
-                        if (chessGame.Moving is not null)
-                            moving = chessGame.Moving;
+                        var t = chessGame.cameraPosOrigin;
+                        chessGame.CameraPos = new Vector3(-t.X, -t.Y, t.Z);
+                        chessGame.CameraTarget = moving.Movement;
+                        break;
+                    }
+                case CameraType.MovingWhite:
+                    {
                         chessGame.CameraPos = moving.Movement + chessGame.cameraDistance;
+                        chessGame.CameraTarget = moving.Movement;
+                        break;
+                    }
+                case CameraType.MovingBlack:
+                    {
+                        var t = chessGame.cameraPosOrigin;
+                        chessGame.CameraPos = moving.Movement + new Vector3(-t.X, -t.Y, t.Z);
                         chessGame.CameraTarget = moving.Movement;
                         break;
                     }
@@ -96,22 +127,15 @@ namespace Scene3D
             canvas.Refresh();
         }
 
-        private void buttonStep_Click(object sender, EventArgs e)
-        {
-            AnimationStartStop();
-        }
-
         private void AnimationStartStop()
         {
             if (timer.Enabled)
             {
                 timer.Stop();
-                buttonStep.Text = "Start";
             }
             else
             {
                 timer.Start();
-                buttonStep.Text = "Stop";
             }
         }
 
@@ -126,23 +150,41 @@ namespace Scene3D
             {
                 case Keys.F1:
                     {
-                        cameraType = CameraType.Stationary;
+                        cameraType = CameraType.StationaryWhite;
                         Redraw(false);
                         break;
                     }
                 case Keys.F2:
                     {
-                        cameraType = CameraType.Following;
+                        cameraType = CameraType.StationaryBlack;
                         Redraw(false);
                         break;
                     }
                 case Keys.F3:
                     {
-                        cameraType = CameraType.Moving;
+                        cameraType = CameraType.FollowingWhite;
                         Redraw(false);
                         break;
                     }
                 case Keys.F4:
+                    {
+                        cameraType = CameraType.FollowingBlack;
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.F5:
+                    {
+                        cameraType = CameraType.MovingWhite;
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.F6:
+                    {
+                        cameraType = CameraType.MovingBlack;
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.F7:
                     {
                         cameraType = CameraType.Rotating;
                         Redraw(false);
@@ -166,15 +208,6 @@ namespace Scene3D
                         Redraw(false);
                         break;
                     }
-                case Keys.Tab:
-                    {
-                        movingIndex++;
-                        if(movingIndex >= chessGame.Count)
-                            movingIndex = 0;
-                        moving = chessGame[movingIndex];
-                        Redraw(false);
-                        break;
-                    }
                 case Keys.P:
                     {
                         AnimationStartStop();
@@ -192,6 +225,18 @@ namespace Scene3D
                             if (light is PointLight)
                                 light.ChangeOnOff();
                         }
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.M:
+                    {
+                        nightAndDayDirection *= -1;
+                        Redraw(false);
+                        break;
+                    }
+                case Keys.R:
+                    {
+                        rotateMoving = !rotateMoving;
                         Redraw(false);
                         break;
                     }
@@ -245,6 +290,13 @@ namespace Scene3D
                         Redraw(false);
                         break;
                     }
+                case Keys.Escape:
+                    {
+                        LightSingleton.Reset();
+                        chessGame = SceneLoaders.SceneLoader.LoadBetterChess(fastBitmap.Width, fastBitmap.Height);
+                        Redraw(true);
+                        break;
+                    }
             }
         }
 
@@ -260,6 +312,22 @@ namespace Scene3D
                         return;
                     }
                     n--;
+                }
+            }
+        }
+
+        private void ChangeSpotLights()
+        {
+            foreach (var light in LightSingleton.GetInstance())
+            {
+                if (light is PointLight)
+                {
+                    ((PointLight)light).LightCoef += nightAndDayDirection;
+                    //if((nightAndDayDirection < 0 && ((PointLight)light).LightCoef == 0) 
+                    //    || (nightAndDayDirection < 0 && ((PointLight)light).LightCoef == 0))
+                    //{
+                    //    nightAndDayDirection = 0;
+                    //}
                 }
             }
         }

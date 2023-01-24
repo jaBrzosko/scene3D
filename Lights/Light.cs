@@ -11,7 +11,6 @@ namespace Scene3D.Lights
     {
         public Vector3 LightColor { get; set; } 
         public Vector3 Position { get; set; }
-        private Vector3 WorldPosition { get; set; }
         private Vector3 RotatedWorldPosition { get; set; }
         private int width;
         private int height;

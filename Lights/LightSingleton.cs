@@ -10,6 +10,14 @@ namespace Scene3D.Lights
     {
         private static List<Light> lights;
 
+        public static void Reset()
+        {
+
+            if (lights == null)
+                lights = new List<Light>();
+            lights.Clear();
+        }
+
         public static List<Light> GetInstance()
         {
             if(lights == null)

@@ -9,19 +9,19 @@ namespace Scene3D.Movers
 {
     internal class Vibrator
     {
-        private float maxR;
+        public float MaxR { get; set; }
         private Random random;
         public Vibrator(float maxR, int? seed = null)
         {
-            this.maxR = maxR;
+            MaxR = maxR;
             random = seed != null ? new Random((int)seed) : new Random();
         }
 
         public Vector3 GetVibration()
         {
-            return new Vector3((float)(random.NextDouble() * 2 * maxR - maxR),
-                            (float)(random.NextDouble() * 2 * maxR - maxR),
-                            (float)(random.NextDouble() * 2 * maxR - maxR));
+            return new Vector3((float)(random.NextDouble() * 2 * MaxR - MaxR),
+                            (float)(random.NextDouble() * 2 * MaxR - MaxR),
+                            (float)(random.NextDouble() * 2 * MaxR - MaxR));
         }
 
     }

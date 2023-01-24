@@ -43,7 +43,7 @@ namespace Scene3D.Objects.Chess
             IsWhite = isWhite;
         }
 
-        public bool IsMoving { get { return InitialPosition != Movement; } }
+        public bool IsMoving { get { return InitialPosition != Movement && PieceMover.CurrentSteps != 0; } }
 
         public override void MakeMovementStep()
         {

@@ -37,12 +37,15 @@ namespace Scene3D.Objects.Chess
             AddModel(piece);
         }
 
-        public void MakeChessMove()
+        public void MakeChessMove(bool rotateMoving)
         {
             if(Moving != null)
             {
+                if(rotateMoving)
+                    Moving.AngleStep = System.Numerics.Vector3.UnitZ / 10;
                 if (Moving.IsMoving)
                     return;
+                Moving.AngleStep = System.Numerics.Vector3.Zero;
                 Moving = null;
                 if (capturable is not null)
                 {
@@ -100,6 +103,7 @@ namespace Scene3D.Objects.Chess
                     promotableCords = null;
                 }
             }
+
             Piece? temp;
             try
             {

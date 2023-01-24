@@ -10,14 +10,14 @@ namespace Scene3D.Movers
     internal class PointToPointMover: IMover
     {
         private int steps;
-        private int currentSteps;
+        public int CurrentSteps { get; set; }
         private Vector3 current;
         private Vector3 destination;
         private Vector3 movement;
         public PointToPointMover(int steps, Vector3 initPos)
         {
             this.steps = steps;
-            currentSteps = 0;
+            CurrentSteps = 0;
             current = initPos;
             destination = initPos;
             movement = Vector3.Zero;
@@ -27,16 +27,17 @@ namespace Scene3D.Movers
         {
             this.current = current;
             this.destination = destination;
-            movement = (destination - current) / steps;
-            currentSteps = steps;
+            int tempSteps = (int)(steps * (destination - current).Length());
+            movement = (destination - current) / tempSteps;
+            CurrentSteps = tempSteps;
         }
 
         public Vector3 GetNewPosition(Vector3 offset)
         {
-            if (currentSteps == 0)
+            if (CurrentSteps == 0)
                 return offset + destination;
          
-            currentSteps--;
+            CurrentSteps--;
             current += movement;
             return offset + current;
         }
